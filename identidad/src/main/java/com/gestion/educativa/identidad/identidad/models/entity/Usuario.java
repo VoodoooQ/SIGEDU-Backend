@@ -10,8 +10,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,11 +25,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = "usuario")
+@Inheritance(strategy = InheritanceType.JOINED)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"funcionario", "apoderado", "roles"})
+@ToString(exclude = {"roles"})
 public class Usuario implements UserDetails {
 
     @Id
@@ -61,12 +63,6 @@ public class Usuario implements UserDetails {
 
     @Column(name = "contrasena")
     private String contrasena;
-
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Funcionario funcionario;
-
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Apoderado apoderado;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UsuarioRol> roles = new ArrayList<>();

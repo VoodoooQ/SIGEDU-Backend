@@ -1,8 +1,11 @@
 package com.gestion.educativa.identidad.identidad.services;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import com.gestion.educativa.identidad.identidad.exceptions.RecursoNoEncontradoException;
 import com.gestion.educativa.identidad.identidad.models.dto.UsuarioDto;
@@ -15,16 +18,18 @@ import com.gestion.educativa.identidad.identidad.models.entity.Inspector;
 import com.gestion.educativa.identidad.identidad.models.entity.Rol;
 import com.gestion.educativa.identidad.identidad.models.entity.Usuario;
 import com.gestion.educativa.identidad.identidad.models.entity.UsuarioRol;
-import com.gestion.educativa.identidad.identidad.models.request.UsuarioRequest;
+import com.gestion.educativa.identidad.identidad.models.request.ActualizarUsuarioRequest;
+import com.gestion.educativa.identidad.identidad.models.request.CrearUsuarioRequest;
 import com.gestion.educativa.identidad.identidad.repositories.ApoderadoRepository;
-import com.gestion.educativa.identidad.identidad.repositories.DirectivoRepository;
-import com.gestion.educativa.identidad.identidad.repositories.DocenteRepository;
 import com.gestion.educativa.identidad.identidad.repositories.EstudianteRepository;
-import com.gestion.educativa.identidad.identidad.repositories.FuncionarioRepository;
-import com.gestion.educativa.identidad.identidad.repositories.InspectorRepository;
+import com.gestion.educativa.identidad.identidad.repositories.RolRepository;
 import com.gestion.educativa.identidad.identidad.repositories.UsuarioRepository;
+import com.gestion.educativa.identidad.identidad.repositories.UsuarioRolRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,82 +38,90 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UsuarioService {
 
+    private static final Set<String> ROLES_LECTURA_GLOBAL = Set.of("ADMIN", "DIRECTIVO", "INSPECTOR", "DOCENTE");
+    private static final Set<String> ROLES_LECTURA_PROPIA = Set.of("FUNCIONARIO", "ESTUDIANTE");
+
     private final UsuarioRepository usuarioRepository;
-    private final FuncionarioRepository funcionarioRepository;
-    private final DocenteRepository docenteRepository;
-    private final InspectorRepository inspectorRepository;
-    private final DirectivoRepository directivoRepository;
+    private final RolRepository rolRepository;
+    private final UsuarioRolRepository usuarioRolRepository;
     private final ApoderadoRepository apoderadoRepository;
     private final EstudianteRepository estudianteRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public UsuarioDto crearUsuario(UsuarioRequest solicitud) {
+    public UsuarioDto crearUsuario(CrearUsuarioRequest solicitud) {
         String runNormalizado = limpiarRun(solicitud.getRunUsuario());
-        String correoNormalizado = solicitud.getCorreoUsuario().trim().toLowerCase(Locale.ROOT);
+        String correoNormalizado = normalizarCorreo(solicitud.getCorreoUsuario());
+        String tipoUsuario = normalizarTipoUsuario(solicitud.getTipoUsuario());
 
-        if (usuarioRepository.existsById(runNormalizado) || usuarioRepository.existsByCorreoUsuario(correoNormalizado)) {
-            throw new DataIntegrityViolationException("RUT o correo ya registrado");
-        }
+        validarPermisoCreacion(tipoUsuario);
+        validarDisponibilidad(runNormalizado, correoNormalizado);
+        validarRutChileno(runNormalizado, solicitud.getDvrunUsuario());
 
-        char dvNormalizado = Character.toUpperCase(solicitud.getDvrunUsuario());
-        if (!validarRutChileno(runNormalizado, dvNormalizado)) {
-            throw new IllegalArgumentException("RUT chileno inválido");
-        }
-
-        Usuario usuario = new Usuario();
-        usuario.setRunUsuario(runNormalizado);
-        usuario.setDvrunUsuario(dvNormalizado);
-        usuario.setPNombreUsuario(solicitud.getPNombreUsuario().trim());
-        usuario.setOsNombreUsuario(normalizarTextoOpcional(solicitud.getOsNombreUsuario()));
-        usuario.setPApellidoUsuario(solicitud.getPApellidoUsuario().trim());
-        usuario.setOsApellidoUsuario(normalizarTextoOpcional(solicitud.getOsApellidoUsuario()));
-        usuario.setCorreoUsuario(correoNormalizado);
-        usuario.setTelefonoUsuario(normalizarTextoOpcional(solicitud.getTelefonoUsuario()));
-        usuario.setGenero(Character.toUpperCase(solicitud.getGenero()));
-        usuario.setContrasena(passwordEncoder.encode(solicitud.getContrasena()));
-        usuarioRepository.save(usuario);
-
-        crearSubtipoSegunSolicitud(usuario, solicitud);
-
-        return mapearUsuarioADto(usuario);
+        Usuario nuevoUsuario = construirEntidadSegunTipo(solicitud, runNormalizado, correoNormalizado, tipoUsuario);
+        Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
+        asignarRolInicial(usuarioGuardado, tipoUsuario);
+        return mapearUsuarioADto(usuarioGuardado);
     }
 
     @Transactional(readOnly = true)
     public UsuarioDto obtenerUsuario(String runUsuario) {
-        Usuario usuario = usuarioRepository.findById(limpiarRun(runUsuario))
+        String runNormalizado = limpiarRun(runUsuario);
+        Authentication autenticacion = obtenerAutenticacion();
+        String runSolicitante = autenticacion.getName();
+        Set<String> autoridades = obtenerAutoridades(autenticacion);
+
+        Usuario usuario = usuarioRepository.findById(runNormalizado)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
-        return mapearUsuarioADto(usuario);
+        validarPermisoLectura(runNormalizado);
+        return mapearUsuarioSegunContexto(usuario, autoridades, runSolicitante);
     }
 
     @Transactional(readOnly = true)
     public List<UsuarioDto> listarUsuarios() {
-        return usuarioRepository.findAll()
-                .stream()
-                .map(this::mapearUsuarioADto)
-                .collect(Collectors.toList());
+        Authentication autenticacion = obtenerAutenticacion();
+        String runSolicitante = autenticacion.getName();
+        Set<String> autoridades = obtenerAutoridades(autenticacion);
+
+        if (tieneAlgunaAutoridad(autoridades, ROLES_LECTURA_GLOBAL)) {
+            return usuarioRepository.findAll()
+                    .stream()
+                    .map(usuario -> mapearUsuarioSegunContexto(usuario, autoridades, runSolicitante))
+                    .collect(Collectors.toList());
+        }
+
+        if (tieneAlgunaAutoridad(autoridades, ROLES_LECTURA_PROPIA)) {
+            Usuario propio = usuarioRepository.findById(runSolicitante)
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+            return List.of(mapearUsuarioSegunContexto(propio, autoridades, runSolicitante));
+        }
+
+        if (autoridades.contains("APODERADO")) {
+            List<UsuarioDto> resultado = new ArrayList<>();
+            Usuario apoderado = usuarioRepository.findById(runSolicitante)
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+            resultado.add(mapearUsuarioSegunContexto(apoderado, autoridades, runSolicitante));
+
+            List<Estudiante> estudiantes = estudianteRepository.findByApoderado_RunUsuario(runSolicitante);
+            resultado.addAll(
+                    estudiantes.stream()
+                            .map(estudiante -> mapearUsuarioSegunContexto(estudiante, autoridades, runSolicitante))
+                            .filter(dto -> !dto.getRunUsuario().equals(runSolicitante))
+                            .collect(Collectors.toCollection(ArrayList::new))
+            );
+            return resultado;
+        }
+
+        throw new AccessDeniedException("No tienes permisos para listar usuarios");
     }
 
     @Transactional
-    public UsuarioDto actualizarUsuario(String runUsuario, UsuarioRequest solicitud) {
+    public UsuarioDto actualizarUsuario(String runUsuario, ActualizarUsuarioRequest solicitud) {
         String runNormalizado = limpiarRun(runUsuario);
+        validarPermisoActualizacion(runNormalizado);
+
         Usuario usuario = usuarioRepository.findById(runNormalizado)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
-
-        if (solicitud.getRunUsuario() != null && !solicitud.getRunUsuario().isBlank()) {
-            String runSolicitud = limpiarRun(solicitud.getRunUsuario());
-            if (!runNormalizado.equals(runSolicitud)) {
-                throw new IllegalArgumentException("El RUN del cuerpo debe coincidir con el RUN de la ruta");
-            }
-        }
-
-        if (solicitud.getDvrunUsuario() != null) {
-            char dvNormalizado = Character.toUpperCase(solicitud.getDvrunUsuario());
-            if (!validarRutChileno(runNormalizado, dvNormalizado)) {
-                throw new IllegalArgumentException("RUT chileno inválido");
-            }
-            usuario.setDvrunUsuario(dvNormalizado);
-        }
 
         if (solicitud.getPNombreUsuario() != null) {
             usuario.setPNombreUsuario(solicitud.getPNombreUsuario().trim());
@@ -123,9 +136,10 @@ public class UsuarioService {
             usuario.setOsApellidoUsuario(normalizarTextoOpcional(solicitud.getOsApellidoUsuario()));
         }
         if (solicitud.getCorreoUsuario() != null) {
-            String correoNormalizado = solicitud.getCorreoUsuario().trim().toLowerCase(Locale.ROOT);
-            if (!correoNormalizado.equals(usuario.getCorreoUsuario()) && usuarioRepository.existsByCorreoUsuario(correoNormalizado)) {
-                throw new DataIntegrityViolationException("RUT o correo ya registrado");
+            String correoNormalizado = normalizarCorreo(solicitud.getCorreoUsuario());
+            if (!correoNormalizado.equalsIgnoreCase(usuario.getCorreoUsuario())
+                    && usuarioRepository.existsByCorreoUsuario(correoNormalizado)) {
+                throw new DataIntegrityViolationException("Correo ya registrado");
             }
             usuario.setCorreoUsuario(correoNormalizado);
         }
@@ -136,151 +150,239 @@ public class UsuarioService {
             usuario.setGenero(Character.toUpperCase(solicitud.getGenero()));
         }
         if (solicitud.getContrasena() != null && !solicitud.getContrasena().isBlank()) {
-            usuario.setContrasena(passwordEncoder.encode(solicitud.getContrasena()));
+            usuario.setContrasena(passwordEncoder.encode(solicitud.getContrasena().trim()));
         }
 
-        usuarioRepository.save(usuario);
-        actualizarSubtipoSiCorresponde(runNormalizado, solicitud);
-        return mapearUsuarioADto(usuario);
+        Usuario usuarioActualizado = usuarioRepository.save(usuario);
+        return mapearUsuarioADto(usuarioActualizado);
     }
 
     @Transactional
     public void eliminarUsuario(String runUsuario) {
         String runNormalizado = limpiarRun(runUsuario);
+        validarPermisoEliminacion();
         if (!usuarioRepository.existsById(runNormalizado)) {
             throw new RecursoNoEncontradoException("Usuario no encontrado");
         }
         usuarioRepository.deleteById(runNormalizado);
     }
 
-    private void crearSubtipoSegunSolicitud(Usuario usuario, UsuarioRequest solicitud) {
-        String tipoUsuario = solicitud.getTipoUsuario().trim().toUpperCase(Locale.ROOT);
-        String campoEspecifico = normalizarTextoOpcional(solicitud.getCampoEspecifico());
+    private void validarPermisoCreacion(String tipoUsuario) {
+        Set<String> autoridades = obtenerAutoridades(obtenerAutenticacion());
 
-        switch (tipoUsuario) {
-            case "DOCENTE" -> {
-                Funcionario funcionario = new Funcionario();
-                funcionario.setRunUsuario(usuario.getRunUsuario());
-                funcionario.setTitulo("DOCENTE");
-                funcionario.setUsuario(usuario);
-                funcionarioRepository.save(funcionario);
-
-                Docente docente = new Docente();
-                docente.setRunUsuario(usuario.getRunUsuario());
-                docente.setEspecialidad(obtenerCampoEspecificoObligatorio(campoEspecifico, "especialidad"));
-                docente.setFuncionario(funcionario);
-                docenteRepository.save(docente);
-            }
-            case "INSPECTOR" -> {
-                Funcionario funcionario = new Funcionario();
-                funcionario.setRunUsuario(usuario.getRunUsuario());
-                funcionario.setTitulo("INSPECTOR");
-                funcionario.setUsuario(usuario);
-                funcionarioRepository.save(funcionario);
-
-                Inspector inspector = new Inspector();
-                inspector.setRunUsuario(usuario.getRunUsuario());
-                inspector.setArea(obtenerCampoEspecificoObligatorio(campoEspecifico, "área"));
-                inspector.setFuncionario(funcionario);
-                inspectorRepository.save(inspector);
-            }
-            case "DIRECTIVO" -> {
-                Funcionario funcionario = new Funcionario();
-                funcionario.setRunUsuario(usuario.getRunUsuario());
-                funcionario.setTitulo("DIRECTIVO");
-                funcionario.setUsuario(usuario);
-                funcionarioRepository.save(funcionario);
-
-                Directivo directivo = new Directivo();
-                directivo.setRunUsuario(usuario.getRunUsuario());
-                directivo.setCargo(obtenerCampoEspecificoObligatorio(campoEspecifico, "cargo"));
-                directivo.setFuncionario(funcionario);
-                directivoRepository.save(directivo);
-            }
-            case "APODERADO" -> {
-                Apoderado apoderado = new Apoderado();
-                apoderado.setRunUsuario(usuario.getRunUsuario());
-                apoderado.setParentesco(obtenerCampoEspecificoObligatorio(campoEspecifico, "parentesco"));
-                apoderado.setUsuario(usuario);
-                apoderadoRepository.save(apoderado);
-            }
-            case "ESTUDIANTE" -> {
-                String runApoderado = limpiarRun(solicitud.getRunApoderado());
-                if (runApoderado == null || runApoderado.isBlank()) {
-                    throw new IllegalArgumentException("El runApoderado es obligatorio para estudiantes");
-                }
-
-                Apoderado apoderado = apoderadoRepository.findById(runApoderado)
-                        .orElseThrow(() -> new RecursoNoEncontradoException("Apoderado no encontrado"));
-
-                Estudiante estudiante = new Estudiante();
-                estudiante.setRunUsuario(usuario.getRunUsuario());
-                estudiante.setParentesco(obtenerCampoEspecificoObligatorio(campoEspecifico, "parentesco"));
-                estudiante.setUsuario(usuario);
-                estudiante.setApoderado(apoderado);
-                estudianteRepository.save(estudiante);
-            }
-            default -> throw new IllegalArgumentException("Tipo de usuario no válido");
-        }
-    }
-
-    private void actualizarSubtipoSiCorresponde(String runUsuario, UsuarioRequest solicitud) {
-        if (solicitud.getTipoUsuario() == null || solicitud.getTipoUsuario().isBlank()) {
+        if (tieneAlgunaAutoridad(autoridades, Set.of("ADMIN", "DIRECTIVO"))) {
             return;
         }
 
-        String tipoUsuario = solicitud.getTipoUsuario().trim().toUpperCase(Locale.ROOT);
+        if (autoridades.contains("INSPECTOR")) {
+            if (Set.of("DIRECTIVO", "INSPECTOR").contains(tipoUsuario)) {
+                throw new AccessDeniedException("Inspector no puede crear usuarios de alto privilegio");
+            }
+            return;
+        }
+
+        throw new AccessDeniedException("No tienes permisos para crear usuarios");
+    }
+
+    private void validarPermisoLectura(String runObjetivo) {
+        Authentication autenticacion = obtenerAutenticacion();
+        String runSolicitante = autenticacion.getName();
+        Set<String> autoridades = obtenerAutoridades(autenticacion);
+
+        if (tieneAlgunaAutoridad(autoridades, ROLES_LECTURA_GLOBAL)) {
+            return;
+        }
+
+        if (tieneAlgunaAutoridad(autoridades, ROLES_LECTURA_PROPIA) && runSolicitante.equals(runObjetivo)) {
+            return;
+        }
+
+        if (autoridades.contains("APODERADO")
+                && (runSolicitante.equals(runObjetivo) || esEstudianteAsociado(runSolicitante, runObjetivo))) {
+            return;
+        }
+
+        throw new AccessDeniedException("No tienes permisos para consultar este usuario");
+    }
+
+    private void validarPermisoActualizacion(String runObjetivo) {
+        Authentication autenticacion = obtenerAutenticacion();
+        String runSolicitante = autenticacion.getName();
+        Set<String> autoridades = obtenerAutoridades(autenticacion);
+
+        if (tieneAlgunaAutoridad(autoridades, Set.of("ADMIN", "DIRECTIVO"))) {
+            return;
+        }
+
+        if (autoridades.contains("INSPECTOR")) {
+            if (esUsuarioConAutoridad(runObjetivo, Set.of("ADMIN", "DIRECTIVO"))) {
+                throw new AccessDeniedException("Inspector no puede actualizar directivos");
+            }
+            return;
+        }
+
+        if (autoridades.contains("FUNCIONARIO") && runSolicitante.equals(runObjetivo)) {
+            return;
+        }
+
+        throw new AccessDeniedException("No tienes permisos para actualizar este usuario");
+    }
+
+    private void validarPermisoEliminacion() {
+        Set<String> autoridades = obtenerAutoridades(obtenerAutenticacion());
+        if (!tieneAlgunaAutoridad(autoridades, Set.of("ADMIN", "DIRECTIVO"))) {
+            throw new AccessDeniedException("No tienes permisos para eliminar usuarios");
+        }
+    }
+
+    private Usuario construirEntidadSegunTipo(
+            CrearUsuarioRequest solicitud,
+            String runNormalizado,
+            String correoNormalizado,
+            String tipoUsuario
+    ) {
         String campoEspecifico = normalizarTextoOpcional(solicitud.getCampoEspecifico());
+        Usuario usuario;
 
         switch (tipoUsuario) {
+            case "FUNCIONARIO" -> {
+                Funcionario funcionario = new Funcionario();
+                funcionario.setTitulo(obtenerCampoEspecificoObligatorio(campoEspecifico, "titulo"));
+                usuario = funcionario;
+            }
             case "DOCENTE" -> {
-                Docente docente = docenteRepository.findById(runUsuario)
-                        .orElseThrow(() -> new RecursoNoEncontradoException("Docente no encontrado"));
-                if (campoEspecifico != null) {
-                    docente.setEspecialidad(campoEspecifico);
-                    docenteRepository.save(docente);
-                }
+                Docente docente = new Docente();
+                docente.setTitulo("DOCENTE");
+                docente.setEspecialidad(obtenerCampoEspecificoObligatorio(campoEspecifico, "especialidad"));
+                usuario = docente;
             }
             case "INSPECTOR" -> {
-                Inspector inspector = inspectorRepository.findById(runUsuario)
-                        .orElseThrow(() -> new RecursoNoEncontradoException("Inspector no encontrado"));
-                if (campoEspecifico != null) {
-                    inspector.setArea(campoEspecifico);
-                    inspectorRepository.save(inspector);
-                }
+                Inspector inspector = new Inspector();
+                inspector.setTitulo("INSPECTOR");
+                inspector.setArea(obtenerCampoEspecificoObligatorio(campoEspecifico, "area"));
+                usuario = inspector;
             }
             case "DIRECTIVO" -> {
-                Directivo directivo = directivoRepository.findById(runUsuario)
-                        .orElseThrow(() -> new RecursoNoEncontradoException("Directivo no encontrado"));
-                if (campoEspecifico != null) {
-                    directivo.setCargo(campoEspecifico);
-                    directivoRepository.save(directivo);
-                }
+                Directivo directivo = new Directivo();
+                directivo.setTitulo("DIRECTIVO");
+                directivo.setCargo(obtenerCampoEspecificoObligatorio(campoEspecifico, "cargo"));
+                usuario = directivo;
             }
             case "APODERADO" -> {
-                Apoderado apoderado = apoderadoRepository.findById(runUsuario)
-                        .orElseThrow(() -> new RecursoNoEncontradoException("Apoderado no encontrado"));
-                if (campoEspecifico != null) {
-                    apoderado.setParentesco(campoEspecifico);
-                    apoderadoRepository.save(apoderado);
-                }
+                Apoderado apoderado = new Apoderado();
+                apoderado.setParentesco(obtenerCampoEspecificoObligatorio(campoEspecifico, "parentesco"));
+                usuario = apoderado;
             }
             case "ESTUDIANTE" -> {
-                Estudiante estudiante = estudianteRepository.findById(runUsuario)
-                        .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado"));
-                if (campoEspecifico != null) {
-                    estudiante.setParentesco(campoEspecifico);
+                String runApoderadoNormalizado = limpiarRun(solicitud.getRunApoderado());
+                if (runApoderadoNormalizado == null || runApoderadoNormalizado.isBlank()) {
+                    throw new IllegalArgumentException("runApoderado es obligatorio para tipo ESTUDIANTE");
                 }
-                String runApoderado = limpiarRun(solicitud.getRunApoderado());
-                if (runApoderado != null && !runApoderado.isBlank()) {
-                    Apoderado apoderado = apoderadoRepository.findById(runApoderado)
-                            .orElseThrow(() -> new RecursoNoEncontradoException("Apoderado no encontrado"));
-                    estudiante.setApoderado(apoderado);
-                }
-                estudianteRepository.save(estudiante);
+                Apoderado apoderado = apoderadoRepository.findById(runApoderadoNormalizado)
+                        .orElseThrow(() -> new RecursoNoEncontradoException("Apoderado no encontrado"));
+                Estudiante estudiante = new Estudiante();
+                estudiante.setParentesco(obtenerCampoEspecificoObligatorio(campoEspecifico, "parentesco"));
+                estudiante.setApoderado(apoderado);
+                usuario = estudiante;
             }
-            default -> throw new IllegalArgumentException("Tipo de usuario no válido");
+            default -> throw new IllegalArgumentException("Tipo de usuario no valido");
         }
+
+        popularDatosBase(usuario, solicitud, runNormalizado, correoNormalizado);
+        return usuario;
+    }
+
+    private void popularDatosBase(
+            Usuario usuario,
+            CrearUsuarioRequest solicitud,
+            String runNormalizado,
+            String correoNormalizado
+    ) {
+        char dvNormalizado = Character.toUpperCase(solicitud.getDvrunUsuario());
+        char generoNormalizado = Character.toUpperCase(solicitud.getGenero());
+
+        usuario.setRunUsuario(runNormalizado);
+        usuario.setDvrunUsuario(dvNormalizado);
+        usuario.setPNombreUsuario(solicitud.getPNombreUsuario().trim());
+        usuario.setOsNombreUsuario(normalizarTextoOpcional(solicitud.getOsNombreUsuario()));
+        usuario.setPApellidoUsuario(solicitud.getPApellidoUsuario().trim());
+        usuario.setOsApellidoUsuario(normalizarTextoOpcional(solicitud.getOsApellidoUsuario()));
+        usuario.setCorreoUsuario(correoNormalizado);
+        usuario.setTelefonoUsuario(normalizarTextoOpcional(solicitud.getTelefonoUsuario()));
+        usuario.setGenero(generoNormalizado);
+        usuario.setContrasena(passwordEncoder.encode(solicitud.getContrasena().trim()));
+    }
+
+    private void asignarRolInicial(Usuario usuario, String tipoUsuario) {
+        String nombreRol = "DIRECTIVO".equals(tipoUsuario) ? resolverRolDirectivo() : tipoUsuario;
+        Rol rol = rolRepository.findByNombreRolIgnoreCase(nombreRol)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Rol no encontrado: " + nombreRol));
+
+        if (usuarioRolRepository.existsByUsuario_RunUsuarioAndRol_IdRol(usuario.getRunUsuario(), rol.getIdRol())) {
+            return;
+        }
+
+        UsuarioRol usuarioRol = new UsuarioRol();
+        usuarioRol.setUsuario(usuario);
+        usuarioRol.setRol(rol);
+        usuarioRolRepository.save(usuarioRol);
+
+        if (usuario.getRoles() == null) {
+            usuario.setRoles(new ArrayList<>());
+        }
+        usuario.getRoles().add(usuarioRol);
+    }
+
+    private String resolverRolDirectivo() {
+        if (rolRepository.findByNombreRolIgnoreCase("DIRECTIVO").isPresent()) {
+            return "DIRECTIVO";
+        }
+        if (rolRepository.findByNombreRolIgnoreCase("ADMIN").isPresent()) {
+            return "ADMIN";
+        }
+        throw new RecursoNoEncontradoException("No existe rol DIRECTIVO ni ADMIN para asignar");
+    }
+
+    private boolean esEstudianteAsociado(String runApoderado, String runEstudiante) {
+        return estudianteRepository.findById(runEstudiante)
+                .map(Estudiante::getApoderado)
+                .filter(Objects::nonNull)
+                .map(Usuario::getRunUsuario)
+                .filter(runApoderado::equals)
+                .isPresent();
+    }
+
+    private boolean esUsuarioConAutoridad(String runUsuario, Set<String> autoridadesBuscadas) {
+        return usuarioRepository.findById(runUsuario)
+                .map(Usuario::getRoles)
+                .orElse(List.of())
+                .stream()
+                .map(UsuarioRol::getRol)
+                .filter(Objects::nonNull)
+                .map(Rol::getNombreRol)
+                .filter(Objects::nonNull)
+                .map(nombreRol -> nombreRol.toUpperCase(Locale.ROOT))
+                .anyMatch(autoridadesBuscadas::contains);
+    }
+
+    private Authentication obtenerAutenticacion() {
+        Authentication autenticacion = SecurityContextHolder.getContext().getAuthentication();
+        if (autenticacion == null || !autenticacion.isAuthenticated()
+                || "anonymousUser".equals(autenticacion.getPrincipal())) {
+            throw new AccessDeniedException("Autenticacion requerida");
+        }
+        return autenticacion;
+    }
+
+    private Set<String> obtenerAutoridades(Authentication autenticacion) {
+        return autenticacion.getAuthorities()
+                .stream()
+                .map(grantedAuthority -> grantedAuthority.getAuthority().toUpperCase(Locale.ROOT))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private boolean tieneAlgunaAutoridad(Set<String> autoridadesActuales, Set<String> autoridadesBuscadas) {
+        return autoridadesActuales.stream().anyMatch(autoridadesBuscadas::contains);
     }
 
     private UsuarioDto mapearUsuarioADto(Usuario usuario) {
@@ -307,11 +409,87 @@ public class UsuarioService {
         );
     }
 
+    private UsuarioDto mapearUsuarioSegunContexto(Usuario usuario, Set<String> autoridades, String runSolicitante) {
+        UsuarioDto base = mapearUsuarioADto(usuario);
+        boolean esPropio = usuario.getRunUsuario().equals(runSolicitante);
+
+        if (tieneAlgunaAutoridad(autoridades, ROLES_LECTURA_GLOBAL)) {
+            return base;
+        }
+
+        if (autoridades.contains("FUNCIONARIO") && esPropio) {
+            return base;
+        }
+
+        if (autoridades.contains("APODERADO")) {
+            return mapearVistaApoderado(base);
+        }
+
+        if (autoridades.contains("ESTUDIANTE") && esPropio) {
+            return mapearVistaEstudiante(base);
+        }
+
+        return base;
+    }
+
+    private UsuarioDto mapearVistaApoderado(UsuarioDto base) {
+        return new UsuarioDto(
+                base.getRunUsuario(),
+                base.getDvrunUsuario(),
+                base.getPNombreUsuario(),
+                base.getOsNombreUsuario(),
+                base.getPApellidoUsuario(),
+                base.getOsApellidoUsuario(),
+                null,
+                null,
+                base.getGenero(),
+                List.of()
+        );
+    }
+
+    private UsuarioDto mapearVistaEstudiante(UsuarioDto base) {
+        return new UsuarioDto(
+                base.getRunUsuario(),
+                base.getDvrunUsuario(),
+                base.getPNombreUsuario(),
+                null,
+                base.getPApellidoUsuario(),
+                null,
+                null,
+                null,
+                null,
+                List.of()
+        );
+    }
+
+    private void validarDisponibilidad(String runNormalizado, String correoNormalizado) {
+        if (runNormalizado == null || runNormalizado.isBlank()) {
+            throw new IllegalArgumentException("RUN obligatorio");
+        }
+        if (usuarioRepository.existsById(runNormalizado) || usuarioRepository.existsByCorreoUsuario(correoNormalizado)) {
+            throw new DataIntegrityViolationException("RUN o correo ya registrado");
+        }
+    }
+
     private String limpiarRun(String runUsuario) {
         if (runUsuario == null) {
             return null;
         }
         return runUsuario.replaceAll("[^0-9]", "").trim();
+    }
+
+    private String normalizarCorreo(String correoUsuario) {
+        if (correoUsuario == null || correoUsuario.isBlank()) {
+            throw new IllegalArgumentException("Correo obligatorio");
+        }
+        return correoUsuario.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizarTipoUsuario(String tipoUsuario) {
+        if (tipoUsuario == null || tipoUsuario.isBlank()) {
+            throw new IllegalArgumentException("tipoUsuario obligatorio");
+        }
+        return tipoUsuario.trim().toUpperCase(Locale.ROOT);
     }
 
     private String normalizarTextoOpcional(String texto) {
@@ -324,14 +502,14 @@ public class UsuarioService {
 
     private String obtenerCampoEspecificoObligatorio(String campoEspecifico, String nombreCampo) {
         if (campoEspecifico == null || campoEspecifico.isBlank()) {
-            throw new IllegalArgumentException("El campo " + nombreCampo + " es obligatorio para el tipo seleccionado");
+            throw new IllegalArgumentException("Campo obligatorio para tipo seleccionado: " + nombreCampo);
         }
         return campoEspecifico;
     }
 
-    private boolean validarRutChileno(String run, char dv) {
+    private void validarRutChileno(String run, char dv) {
         if (run == null || run.isBlank() || !run.matches("\\d+")) {
-            return false;
+            throw new IllegalArgumentException("RUN invalido");
         }
 
         int suma = 0;
@@ -352,6 +530,8 @@ public class UsuarioService {
             dvCalculado = Character.forDigit(resultado, 10);
         }
 
-        return Character.toUpperCase(dv) == dvCalculado;
+        if (Character.toUpperCase(dv) != dvCalculado) {
+            throw new IllegalArgumentException("RUT chileno invalido");
+        }
     }
 }

@@ -11,8 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-// @Deprecated - reemplazado por CrearUsuarioRequest y ActualizarUsuarioRequest
-public class UsuarioRequest {
+public class CrearUsuarioRequest {
 
     @NotBlank
     private String runUsuario;
