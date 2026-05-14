@@ -25,6 +25,14 @@ public class JwtFiltro extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        String rutaSolicitada = request.getServletPath();
+        if (rutaSolicitada.startsWith("/swagger-ui") ||
+                rutaSolicitada.startsWith("/v3/api-docs") ||
+                rutaSolicitada.equals("/api/auth/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String encabezadoAutorizacion = request.getHeader("Authorization");
         if (encabezadoAutorizacion == null || !encabezadoAutorizacion.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);

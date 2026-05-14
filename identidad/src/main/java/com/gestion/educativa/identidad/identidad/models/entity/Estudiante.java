@@ -3,11 +3,9 @@ package com.gestion.educativa.identidad.identidad.models.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,24 +15,16 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "estudiante")
+@PrimaryKeyJoinColumn(name = "run_usuario")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"usuario", "apoderado"})
-public class Estudiante {
-
-    @Id
-    @Column(name = "run_usuario")
-    private String runUsuario;
+@ToString(exclude = {"apoderado"}, callSuper = true)
+public class Estudiante extends Usuario {
 
     @Column(name = "parentesco")
     private String parentesco;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "run_usuario")
-    private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "run_apoderado")

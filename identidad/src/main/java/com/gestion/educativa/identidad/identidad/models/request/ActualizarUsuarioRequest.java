@@ -1,6 +1,7 @@
-package com.gestion.educativa.identidad.identidad.models.dto;
+package com.gestion.educativa.identidad.identidad.models.request;
 
-import java.util.List;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,16 +9,28 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioDto {
+public class ActualizarUsuarioRequest {
 
-    private String runUsuario;
-    private Character dvrunUsuario;
+    @Size(max = 100)
     private String pNombreUsuario;
+
+    @Size(max = 100)
     private String osNombreUsuario;
+
+    @Size(max = 100)
     private String pApellidoUsuario;
+
+    @Size(max = 100)
     private String osApellidoUsuario;
+
+    @Email
     private String correoUsuario;
+
+    @Size(max = 20)
     private String telefonoUsuario;
+
     private Character genero;
-    private List<String> roles;
+
+    @Size(min = 8)
+    private String contrasena;
 }
