@@ -20,6 +20,6 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class Directivo extends Funcionario {
 
-    @Column(name = "cargo")
+    @Column(name = "cargo", nullable = false, length = 150)
     private String cargo;
 }

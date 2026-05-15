@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,12 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "rol")
+@Table(
+        name = "rol",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_rol_nombre", columnNames = "nombre_rol")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,7 +36,7 @@ public class Rol {
     @Column(name = "id_rol")
     private Integer idRol;
 
-    @Column(name = "nombre_rol")
+    @Column(name = "nombre_rol", nullable = false, length = 50)
     private String nombreRol;
 
     @OneToMany(mappedBy = "rol", fetch = FetchType.LAZY)

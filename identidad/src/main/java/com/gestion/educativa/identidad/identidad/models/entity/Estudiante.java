@@ -23,10 +23,10 @@ import lombok.ToString;
 @ToString(exclude = {"apoderado"}, callSuper = true)
 public class Estudiante extends Usuario {
 
-    @Column(name = "parentesco")
+    @Column(name = "parentesco", nullable = false, length = 100)
     private String parentesco;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "run_apoderado")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "run_apoderado", nullable = false)
     private Apoderado apoderado;
 }

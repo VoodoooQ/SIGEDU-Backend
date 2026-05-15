@@ -20,6 +20,6 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class Inspector extends Funcionario {
 
-    @Column(name = "area")
+    @Column(name = "area", nullable = false, length = 150)
     private String area;
 }

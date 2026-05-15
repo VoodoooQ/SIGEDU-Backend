@@ -23,6 +23,6 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class Funcionario extends Usuario {
 
-    @Column(name = "titulo")
+    @Column(name = "titulo", nullable = false, length = 150)
     private String titulo;
 }

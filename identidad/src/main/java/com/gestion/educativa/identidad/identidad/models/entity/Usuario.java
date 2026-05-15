@@ -17,6 +17,7 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +28,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
-@Table(name = "usuario")
+@Table(
+        name = "usuario",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_usuario_correo", columnNames = "correo_usuario")
+        }
+)
 @Inheritance(strategy = InheritanceType.JOINED)
 @Getter
 @Setter
@@ -37,34 +43,34 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class Usuario implements UserDetails {
 
     @Id
-    @Column(name = "run_usuario")
+    @Column(name = "run_usuario", nullable = false)
     private String runUsuario;
 
-    @Column(name = "dvrun_usuario")
+    @Column(name = "dvrun_usuario", nullable = false, length = 1)
     private char dvrunUsuario;
 
-    @Column(name = "p_nombre_usuario")
+    @Column(name = "p_nombre_usuario", nullable = false, length = 100)
     private String pNombreUsuario;
 
-    @Column(name = "os_nombre_usuario")
+    @Column(name = "os_nombre_usuario", length = 100)
     private String osNombreUsuario;
 
-    @Column(name = "p_apellido_usuario")
+    @Column(name = "p_apellido_usuario", nullable = false, length = 100)
     private String pApellidoUsuario;
 
-    @Column(name = "os_apellido_usuario")
+    @Column(name = "os_apellido_usuario", length = 100)
     private String osApellidoUsuario;
 
-    @Column(name = "correo_usuario")
+    @Column(name = "correo_usuario", nullable = false, length = 150)
     private String correoUsuario;
 
-    @Column(name = "telefono_usuario")
+    @Column(name = "telefono_usuario", length = 20)
     private String telefonoUsuario;
 
-    @Column(name = "genero")
+    @Column(name = "genero", nullable = false, length = 1)
     private char genero;
 
-    @Column(name = "contrasena")
+    @Column(name = "contrasena", nullable = false)
     private String contrasena;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

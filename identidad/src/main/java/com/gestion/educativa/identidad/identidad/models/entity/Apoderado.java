@@ -24,7 +24,7 @@ import lombok.ToString;
 @ToString(exclude = {"estudiantes"}, callSuper = true)
 public class Apoderado extends Usuario {
 
-    @Column(name = "parentesco")
+    @Column(name = "parentesco", nullable = false, length = 100)
     private String parentesco;
 
     @OneToMany(mappedBy = "apoderado", fetch = FetchType.LAZY)
