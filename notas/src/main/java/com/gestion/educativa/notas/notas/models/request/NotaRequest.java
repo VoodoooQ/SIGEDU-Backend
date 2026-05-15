@@ -1,7 +1,5 @@
-package com.gestion.educativa.reuniones.reuniones.models.request;
+package com.gestion.educativa.notas.notas.models.request;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -15,19 +13,25 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class ReunionRequest {
-
-    @NotNull
-    private LocalDate fechaReunion;
-
-    @NotNull
-    private LocalTime horaReunion;
+public class NotaRequest {
 
     @NotBlank
-    private String lugar;
+    private String runEstudiante;
 
     @NotBlank
-    private String tema;
+    private String codigoAsignatura;
+
+    @NotBlank
+    private String periodo;
+
+    @NotBlank
+    private String tipoEvaluacion;
+
+    @NotNull
+    private Double ponderacion;
+
+    @NotNull
+    private Double calificacion;
 
     private String observaciones;
 }

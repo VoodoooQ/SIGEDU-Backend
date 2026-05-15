@@ -1,7 +1,6 @@
 package com.gestion.educativa.reuniones.reuniones.models.entity;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,33 +14,33 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "bitacora_reunion_p1a_p1")
+@Table(name = "acuerdo")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class BitacoraReunionP1aP1 {
+public class Acuerdo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_bitacora_reunion_p1a_p1")
-    private Long idBitacoraReunionP1aP1;
+    @Column(name = "id_acuerdo")
+    private Long idAcuerdo;
 
-    @Column(name = "fecha_reunion", nullable = false)
-    private LocalDate fechaReunion;
+    @Column(name = "id_bitacora_reunion_general", nullable = false)
+    private Long idBitacoraReunionGeneral;
 
-    @Column(name = "hora_reunion", nullable = false)
-    private LocalTime horaReunion;
+    @Column(name = "detalle_acuerdo", nullable = false, length = 500)
+    private String detalleAcuerdo;
 
-    @Column(name = "run_estudiante", nullable = false, length = 12)
-    private String runEstudiante;
+    @Column(name = "responsable", length = 150)
+    private String responsable;
 
-    @Column(name = "lugar", nullable = false, length = 150)
-    private String lugar;
+    @Column(name = "fecha_compromiso")
+    private LocalDate fechaCompromiso;
 
-    @Column(name = "tema", nullable = false, length = 200)
-    private String tema;
+    @Column(name = "estado", nullable = false, length = 30)
+    private String estado;
 
     @Column(name = "observaciones", length = 500)
     private String observaciones;

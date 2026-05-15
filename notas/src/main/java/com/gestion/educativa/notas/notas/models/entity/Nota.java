@@ -1,7 +1,5 @@
-package com.gestion.educativa.reuniones.reuniones.models.entity;
+package com.gestion.educativa.notas.notas.models.entity;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,33 +13,36 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "bitacora_reunion_p1a_p1")
+@Table(name = "nota")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class BitacoraReunionP1aP1 {
+public class Nota {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_bitacora_reunion_p1a_p1")
-    private Long idBitacoraReunionP1aP1;
-
-    @Column(name = "fecha_reunion", nullable = false)
-    private LocalDate fechaReunion;
-
-    @Column(name = "hora_reunion", nullable = false)
-    private LocalTime horaReunion;
+    @Column(name = "id_nota")
+    private Long idNota;
 
     @Column(name = "run_estudiante", nullable = false, length = 12)
     private String runEstudiante;
 
-    @Column(name = "lugar", nullable = false, length = 150)
-    private String lugar;
+    @Column(name = "codigo_asignatura", nullable = false, length = 30)
+    private String codigoAsignatura;
 
-    @Column(name = "tema", nullable = false, length = 200)
-    private String tema;
+    @Column(name = "periodo", nullable = false, length = 50)
+    private String periodo;
+
+    @Column(name = "tipo_evaluacion", nullable = false, length = 80)
+    private String tipoEvaluacion;
+
+    @Column(name = "ponderacion", nullable = false)
+    private Double ponderacion;
+
+    @Column(name = "calificacion", nullable = false)
+    private Double calificacion;
 
     @Column(name = "observaciones", length = 500)
     private String observaciones;
