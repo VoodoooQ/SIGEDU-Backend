@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +30,6 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'DIRECTIVO', 'INSPECTOR')")
     @Operation(summary = "Crear usuario", description = "Registra un nuevo usuario")
     @ApiResponse(responseCode = "403", description = "Sin permisos suficientes")
     public ResponseEntity<UsuarioDto> crearUsuario(@Valid @RequestBody CrearUsuarioRequest solicitud) {
@@ -39,38 +37,35 @@ public class UsuarioController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'DIRECTIVO', 'INSPECTOR', 'FUNCIONARIO', 'DOCENTE', 'APODERADO', 'ESTUDIANTE')")
     @Operation(summary = "Listar usuarios", description = "Obtiene usuarios segun permisos del solicitante")
     @ApiResponse(responseCode = "403", description = "Sin permisos suficientes")
     public ResponseEntity<List<UsuarioDto>> listarUsuarios() {
         return ResponseEntity.ok(usuarioService.listarUsuarios());
     }
 
-    @GetMapping("/{run}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'DIRECTIVO', 'INSPECTOR', 'FUNCIONARIO', 'DOCENTE', 'APODERADO', 'ESTUDIANTE')")
-    @Operation(summary = "Obtener usuario", description = "Obtiene un usuario por RUN segun permisos")
+    @GetMapping("/{run}/{dv}")
+    @Operation(summary = "Obtener usuario", description = "Obtiene un usuario por RUN y DV segun permisos")
     @ApiResponse(responseCode = "403", description = "Sin permisos suficientes")
-    public ResponseEntity<UsuarioDto> obtenerUsuario(@PathVariable String run) {
-        return ResponseEntity.ok(usuarioService.obtenerUsuario(run));
+    public ResponseEntity<UsuarioDto> obtenerUsuario(@PathVariable String run, @PathVariable Character dv) {
+        return ResponseEntity.ok(usuarioService.obtenerUsuario(run, dv));
     }
 
-    @PutMapping("/{run}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'DIRECTIVO', 'INSPECTOR', 'FUNCIONARIO')")
-    @Operation(summary = "Actualizar usuario", description = "Actualiza datos de usuario segun permisos")
+    @PutMapping("/{run}/{dv}")
+    @Operation(summary = "Actualizar usuario", description = "Actualiza datos de usuario por RUN y DV segun permisos")
     @ApiResponse(responseCode = "403", description = "Sin permisos suficientes")
     public ResponseEntity<UsuarioDto> actualizarUsuario(
             @PathVariable String run,
+            @PathVariable Character dv,
             @Valid @RequestBody ActualizarUsuarioRequest solicitud
     ) {
-        return ResponseEntity.ok(usuarioService.actualizarUsuario(run, solicitud));
+        return ResponseEntity.ok(usuarioService.actualizarUsuario(run, dv, solicitud));
     }
 
-    @DeleteMapping("/{run}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'DIRECTIVO')")
-    @Operation(summary = "Eliminar usuario", description = "Elimina un usuario por RUN")
+    @DeleteMapping("/{run}/{dv}")
+    @Operation(summary = "Eliminar usuario", description = "Elimina un usuario por RUN y DV")
     @ApiResponse(responseCode = "403", description = "Sin permisos suficientes")
-    public ResponseEntity<Void> eliminarUsuario(@PathVariable String run) {
-        usuarioService.eliminarUsuario(run);
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable String run, @PathVariable Character dv) {
+        usuarioService.eliminarUsuario(run, dv);
         return ResponseEntity.noContent().build();
     }
 }

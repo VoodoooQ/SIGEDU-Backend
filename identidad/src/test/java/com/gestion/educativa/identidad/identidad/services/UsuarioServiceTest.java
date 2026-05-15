@@ -60,12 +60,12 @@ class UsuarioServiceTest {
     }
 
     @Test
-    void crearUsuarioInspectorNoPuedeCrearDirectivo() {
+    void crearUsuarioFuncionarioNoPuedeCrear() {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
                         "87654321",
                         "token",
-                        List.of(new SimpleGrantedAuthority("INSPECTOR"))
+                        List.of(new SimpleGrantedAuthority("FUNCIONARIO"))
                 )
         );
 
@@ -111,7 +111,7 @@ class UsuarioServiceTest {
 
         when(usuarioRepository.findById("11111111")).thenReturn(Optional.of(estudiante));
 
-        UsuarioDto dto = usuarioService.obtenerUsuario("11111111");
+        UsuarioDto dto = usuarioService.obtenerUsuario("11111111", '1');
 
         assertEquals("11111111", dto.getRunUsuario());
         assertEquals("Max", dto.getPNombreUsuario());
@@ -124,7 +124,7 @@ class UsuarioServiceTest {
     }
 
     @Test
-    void listarUsuariosApoderadoRetornaSoloVistaParcial() {
+    void obtenerUsuarioApoderadoDeEstudianteAsociadoRetornaVistaParcial() {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
                         "22222222",
@@ -155,15 +155,14 @@ class UsuarioServiceTest {
         estudiante.setGenero('M');
         estudiante.setApoderado(entidadApoderado);
 
-        when(usuarioRepository.findById("22222222")).thenReturn(Optional.of(apoderado));
-        when(estudianteRepository.findByApoderado_RunUsuario("22222222")).thenReturn(List.of(estudiante));
+        when(usuarioRepository.findById("33333333")).thenReturn(Optional.of(estudiante));
+        when(estudianteRepository.findById("33333333")).thenReturn(Optional.of(estudiante));
 
-        List<UsuarioDto> usuarios = usuarioService.listarUsuarios();
+        UsuarioDto dto = usuarioService.obtenerUsuario("33333333", '3');
 
-        assertEquals(2, usuarios.size());
-        assertNull(usuarios.get(0).getCorreoUsuario());
-        assertNull(usuarios.get(0).getTelefonoUsuario());
-        assertNull(usuarios.get(1).getCorreoUsuario());
-        assertNull(usuarios.get(1).getTelefonoUsuario());
+        assertEquals("33333333", dto.getRunUsuario());
+        assertEquals("Leo", dto.getPNombreUsuario());
+        assertNull(dto.getCorreoUsuario());
+        assertNull(dto.getTelefonoUsuario());
     }
 }

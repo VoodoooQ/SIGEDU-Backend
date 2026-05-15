@@ -2,8 +2,11 @@ package com.gestion.educativa.identidad.identidad.models.entity;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -72,11 +75,23 @@ public class Usuario implements UserDetails {
         if (roles == null) {
             return List.of();
         }
-        return roles.stream()
+
+        Set<String> nombresRol = roles.stream()
                 .map(UsuarioRol::getRol)
                 .filter(Objects::nonNull)
                 .map(Rol::getNombreRol)
                 .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(nombreRol -> !nombreRol.isBlank())
+                .map(nombreRol -> nombreRol.toUpperCase(Locale.ROOT))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (nombresRol.contains("ADMIN")) {
+            // Alias de compatibilidad para el directivo semilla historico.
+            nombresRol.add("DIRECTIVO");
+        }
+
+        return nombresRol.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
     }

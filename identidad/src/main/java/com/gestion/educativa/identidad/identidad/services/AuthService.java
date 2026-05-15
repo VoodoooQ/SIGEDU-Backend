@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import com.gestion.educativa.identidad.identidad.config.JwtConfig;
-import com.gestion.educativa.identidad.identidad.exceptions.RecursoNoEncontradoException;
 import com.gestion.educativa.identidad.identidad.models.dto.LoginResponse;
 import com.gestion.educativa.identidad.identidad.models.entity.Rol;
 import com.gestion.educativa.identidad.identidad.models.entity.Usuario;
@@ -31,7 +30,7 @@ public class AuthService {
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest solicitud) {
         Usuario usuario = usuarioRepository.findById(solicitud.getRunUsuario())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+                .orElseThrow(() -> new BadCredentialsException("Credenciales incorrectas"));
 
         if (!passwordEncoder.matches(solicitud.getContrasena(), usuario.getContrasena())) {
             throw new BadCredentialsException("Credenciales incorrectas");
@@ -44,6 +43,8 @@ public class AuthService {
                         .filter(Objects::nonNull)
                         .map(Rol::getNombreRol)
                         .filter(Objects::nonNull)
+                        .map(String::trim)
+                        .filter(nombreRol -> !nombreRol.isBlank())
                         .collect(Collectors.toList());
 
         String token = jwtConfig.generarToken(usuario.getRunUsuario(), roles);
