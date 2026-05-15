@@ -1,13 +1,14 @@
 package com.gestion.educativa.identidad.identidad.services;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 import com.gestion.educativa.identidad.identidad.exceptions.RecursoNoEncontradoException;
 import com.gestion.educativa.identidad.identidad.models.dto.RolDto;
 import com.gestion.educativa.identidad.identidad.models.entity.Rol;
 import com.gestion.educativa.identidad.identidad.models.entity.Usuario;
 import com.gestion.educativa.identidad.identidad.models.entity.UsuarioRol;
-import com.gestion.educativa.identidad.identidad.models.request.AsignarRolRequest;
 import com.gestion.educativa.identidad.identidad.repositories.RolRepository;
 import com.gestion.educativa.identidad.identidad.repositories.UsuarioRepository;
 import com.gestion.educativa.identidad.identidad.repositories.UsuarioRolRepository;
@@ -19,21 +20,37 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RolService {
 
+    private static final Set<String> ROLES_PRIMORDIALES = Set.of(
+            "ADMIN",
+            "DIRECTIVO",
+            "INSPECTOR",
+            "FUNCIONARIO",
+            "DOCENTE",
+            "APODERADO",
+            "ESTUDIANTE"
+    );
+
     private final RolRepository rolRepository;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioRolRepository usuarioRolRepository;
 
     @Transactional
     public RolDto crearRol(RolDto rolDto) {
-        if (rolDto.getNombreRol() == null || rolDto.getNombreRol().isBlank()) {
+        if (rolDto == null) {
             throw new IllegalArgumentException("El nombre del rol es obligatorio");
         }
-        if (rolRepository.findByNombreRol(rolDto.getNombreRol()).isPresent()) {
+        return crearRol(rolDto.getNombreRol());
+    }
+
+    @Transactional
+    public RolDto crearRol(String nombreRol) {
+        String nombreRolNormalizado = normalizarNombreRol(nombreRol);
+        if (rolRepository.findByNombreRolIgnoreCase(nombreRolNormalizado).isPresent()) {
             throw new IllegalArgumentException("Ya existe un rol con el mismo nombre");
         }
 
         Rol rol = new Rol();
-        rol.setNombreRol(rolDto.getNombreRol().trim());
+        rol.setNombreRol(nombreRolNormalizado);
         Rol rolGuardado = rolRepository.save(rol);
         return mapearRolADto(rolGuardado);
     }
@@ -47,14 +64,56 @@ public class RolService {
     }
 
     @Transactional
-    public void asignarRol(AsignarRolRequest solicitud) {
-        Usuario usuario = usuarioRepository.findById(solicitud.getRunUsuario())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
-        Rol rol = rolRepository.findById(solicitud.getIdRol())
+    public void asignarRol(String runUsuario, Character dvSolicitado, Integer idRol) {
+        Usuario usuario = obtenerUsuarioValidadoPorDv(runUsuario, dvSolicitado);
+        asignarRolValidado(usuario.getRunUsuario(), idRol);
+    }
+
+    @Transactional
+    public void revocarRol(String runUsuario, Character dvSolicitado, Integer idRol) {
+        Usuario usuario = obtenerUsuarioValidadoPorDv(runUsuario, dvSolicitado);
+        revocarRolValidado(usuario.getRunUsuario(), idRol);
+    }
+
+    @Transactional
+    public void eliminarRol(Integer idRol) {
+        if (idRol == null) {
+            throw new IllegalArgumentException("Id de rol obligatorio");
+        }
+
+        Rol rol = rolRepository.findById(idRol)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Rol no encontrado"));
 
-        if (usuarioRolRepository.existsByUsuario_RunUsuarioAndRol_IdRol(solicitud.getRunUsuario(), solicitud.getIdRol())) {
-            throw new IllegalArgumentException("El rol ya está asignado al usuario");
+        if (esRolPrimordial(rol.getNombreRol())) {
+            throw new IllegalArgumentException("No se puede eliminar un rol primordial del sistema");
+        }
+
+        usuarioRolRepository.deleteByRol_IdRol(idRol);
+        rolRepository.delete(rol);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RolDto> obtenerRolesPorUsuario(String runUsuario, Character dvSolicitado) {
+        Usuario usuario = obtenerUsuarioValidadoPorDv(runUsuario, dvSolicitado);
+        return obtenerRolesPorUsuarioValidado(usuario.getRunUsuario());
+    }
+
+    private void asignarRolValidado(String runUsuario, Integer idRol) {
+        String runNormalizado = limpiarRun(runUsuario);
+        if (runNormalizado == null || runNormalizado.isBlank()) {
+            throw new IllegalArgumentException("RUN obligatorio");
+        }
+        if (idRol == null) {
+            throw new IllegalArgumentException("Id de rol obligatorio");
+        }
+
+        Usuario usuario = usuarioRepository.findById(runNormalizado)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+        Rol rol = rolRepository.findById(idRol)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Rol no encontrado"));
+
+        if (usuarioRolRepository.existsByUsuario_RunUsuarioAndRol_IdRol(runNormalizado, idRol)) {
+            throw new IllegalArgumentException("El rol ya esta asignado al usuario");
         }
 
         UsuarioRol usuarioRol = new UsuarioRol();
@@ -63,16 +122,14 @@ public class RolService {
         usuarioRolRepository.save(usuarioRol);
     }
 
-    @Transactional
-    public void revocarRol(String runUsuario, Integer idRol) {
+    private void revocarRolValidado(String runUsuario, Integer idRol) {
         if (!usuarioRolRepository.existsByUsuario_RunUsuarioAndRol_IdRol(runUsuario, idRol)) {
-            throw new RecursoNoEncontradoException("La asignación de rol no existe");
+            throw new RecursoNoEncontradoException("La asignacion de rol no existe");
         }
         usuarioRolRepository.deleteByUsuario_RunUsuarioAndRol_IdRol(runUsuario, idRol);
     }
 
-    @Transactional(readOnly = true)
-    public List<RolDto> obtenerRolesPorUsuario(String runUsuario) {
+    private List<RolDto> obtenerRolesPorUsuarioValidado(String runUsuario) {
         if (!usuarioRepository.existsById(runUsuario)) {
             throw new RecursoNoEncontradoException("Usuario no encontrado");
         }
@@ -82,6 +139,46 @@ public class RolService {
                 .map(UsuarioRol::getRol)
                 .map(this::mapearRolADto)
                 .collect(Collectors.toList());
+    }
+
+    private Usuario obtenerUsuarioValidadoPorDv(String runUsuario, Character dvSolicitado) {
+        String runNormalizado = limpiarRun(runUsuario);
+        if (runNormalizado == null || runNormalizado.isBlank()) {
+            throw new IllegalArgumentException("RUN obligatorio");
+        }
+        if (dvSolicitado == null) {
+            throw new IllegalArgumentException("DV obligatorio");
+        }
+
+        Usuario usuario = usuarioRepository.findById(runNormalizado)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+
+        char dvNormalizado = Character.toUpperCase(dvSolicitado);
+        if (Character.toUpperCase(usuario.getDvrunUsuario()) != dvNormalizado) {
+            throw new IllegalArgumentException("DV no coincide con el RUN indicado");
+        }
+        return usuario;
+    }
+
+    private String limpiarRun(String runUsuario) {
+        if (runUsuario == null) {
+            return null;
+        }
+        return runUsuario.replaceAll("[^0-9]", "").trim();
+    }
+
+    private String normalizarNombreRol(String nombreRol) {
+        if (nombreRol == null || nombreRol.isBlank()) {
+            throw new IllegalArgumentException("El nombre del rol es obligatorio");
+        }
+        return nombreRol.trim().toUpperCase();
+    }
+
+    private boolean esRolPrimordial(String nombreRol) {
+        if (nombreRol == null) {
+            return false;
+        }
+        return ROLES_PRIMORDIALES.contains(nombreRol.trim().toUpperCase(Locale.ROOT));
     }
 
     private RolDto mapearRolADto(Rol rol) {

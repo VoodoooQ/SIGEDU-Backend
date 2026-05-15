@@ -8,7 +8,11 @@ public interface UsuarioRolRepository extends JpaRepository<UsuarioRol, Integer>
 
     List<UsuarioRol> findByUsuario_RunUsuario(String runUsuario);
 
+    List<UsuarioRol> findByRol_NombreRolIgnoreCase(String nombreRol);
+
     boolean existsByUsuario_RunUsuarioAndRol_IdRol(String runUsuario, Integer idRol);
 
     void deleteByUsuario_RunUsuarioAndRol_IdRol(String runUsuario, Integer idRol);
+
+    void deleteByRol_IdRol(Integer idRol);
 }

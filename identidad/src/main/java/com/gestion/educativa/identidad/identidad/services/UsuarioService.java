@@ -54,7 +54,7 @@ public class UsuarioService {
         String correoNormalizado = normalizarCorreo(solicitud.getCorreoUsuario());
         String tipoUsuario = normalizarTipoUsuario(solicitud.getTipoUsuario());
 
-        validarPermisoCreacion(tipoUsuario);
+        validarPermisoCreacion();
         validarDisponibilidad(runNormalizado, correoNormalizado);
         validarRutChileno(runNormalizado, solicitud.getDvrunUsuario());
 
@@ -65,14 +65,24 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public UsuarioDto obtenerUsuario(String runUsuario) {
+    public UsuarioDto obtenerUsuario(String runUsuario, Character dvSolicitado) {
         String runNormalizado = limpiarRun(runUsuario);
         Authentication autenticacion = obtenerAutenticacion();
         String runSolicitante = autenticacion.getName();
         Set<String> autoridades = obtenerAutoridades(autenticacion);
 
+        if (dvSolicitado == null) {
+            throw new IllegalArgumentException("DV obligatorio para consultar");
+        }
+
         Usuario usuario = usuarioRepository.findById(runNormalizado)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+
+        char dvNormalizado = Character.toUpperCase(dvSolicitado);
+        if (Character.toUpperCase(usuario.getDvrunUsuario()) != dvNormalizado) {
+            throw new IllegalArgumentException("DV no coincide con el RUN indicado");
+        }
+
         validarPermisoLectura(runNormalizado);
         return mapearUsuarioSegunContexto(usuario, autoridades, runSolicitante);
     }
@@ -90,38 +100,25 @@ public class UsuarioService {
                     .collect(Collectors.toList());
         }
 
-        if (tieneAlgunaAutoridad(autoridades, ROLES_LECTURA_PROPIA)) {
-            Usuario propio = usuarioRepository.findById(runSolicitante)
-                    .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
-            return List.of(mapearUsuarioSegunContexto(propio, autoridades, runSolicitante));
-        }
-
-        if (autoridades.contains("APODERADO")) {
-            List<UsuarioDto> resultado = new ArrayList<>();
-            Usuario apoderado = usuarioRepository.findById(runSolicitante)
-                    .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
-            resultado.add(mapearUsuarioSegunContexto(apoderado, autoridades, runSolicitante));
-
-            List<Estudiante> estudiantes = estudianteRepository.findByApoderado_RunUsuario(runSolicitante);
-            resultado.addAll(
-                    estudiantes.stream()
-                            .map(estudiante -> mapearUsuarioSegunContexto(estudiante, autoridades, runSolicitante))
-                            .filter(dto -> !dto.getRunUsuario().equals(runSolicitante))
-                            .collect(Collectors.toCollection(ArrayList::new))
-            );
-            return resultado;
-        }
-
         throw new AccessDeniedException("No tienes permisos para listar usuarios");
     }
 
     @Transactional
-    public UsuarioDto actualizarUsuario(String runUsuario, ActualizarUsuarioRequest solicitud) {
+    public UsuarioDto actualizarUsuario(String runUsuario, Character dvSolicitado, ActualizarUsuarioRequest solicitud) {
         String runNormalizado = limpiarRun(runUsuario);
         validarPermisoActualizacion(runNormalizado);
 
+        if (dvSolicitado == null) {
+            throw new IllegalArgumentException("DV obligatorio para actualizar");
+        }
+
         Usuario usuario = usuarioRepository.findById(runNormalizado)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+
+        char dvNormalizado = Character.toUpperCase(dvSolicitado);
+        if (Character.toUpperCase(usuario.getDvrunUsuario()) != dvNormalizado) {
+            throw new IllegalArgumentException("DV no coincide con el RUN indicado");
+        }
 
         if (solicitud.getPNombreUsuario() != null) {
             usuario.setPNombreUsuario(solicitud.getPNombreUsuario().trim());
@@ -158,16 +155,26 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void eliminarUsuario(String runUsuario) {
+    public void eliminarUsuario(String runUsuario, Character dvSolicitado) {
         String runNormalizado = limpiarRun(runUsuario);
         validarPermisoEliminacion();
-        if (!usuarioRepository.existsById(runNormalizado)) {
-            throw new RecursoNoEncontradoException("Usuario no encontrado");
+
+        if (dvSolicitado == null) {
+            throw new IllegalArgumentException("DV obligatorio para eliminar");
         }
-        usuarioRepository.deleteById(runNormalizado);
+
+        Usuario usuario = usuarioRepository.findById(runNormalizado)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+
+        char dvNormalizado = Character.toUpperCase(dvSolicitado);
+        if (Character.toUpperCase(usuario.getDvrunUsuario()) != dvNormalizado) {
+            throw new IllegalArgumentException("DV no coincide con el RUN indicado");
+        }
+
+        usuarioRepository.delete(usuario);
     }
 
-    private void validarPermisoCreacion(String tipoUsuario) {
+    private void validarPermisoCreacion() {
         Set<String> autoridades = obtenerAutoridades(obtenerAutenticacion());
 
         if (tieneAlgunaAutoridad(autoridades, Set.of("ADMIN", "DIRECTIVO"))) {
@@ -175,9 +182,6 @@ public class UsuarioService {
         }
 
         if (autoridades.contains("INSPECTOR")) {
-            if (Set.of("DIRECTIVO", "INSPECTOR").contains(tipoUsuario)) {
-                throw new AccessDeniedException("Inspector no puede crear usuarios de alto privilegio");
-            }
             return;
         }
 
@@ -215,9 +219,6 @@ public class UsuarioService {
         }
 
         if (autoridades.contains("INSPECTOR")) {
-            if (esUsuarioConAutoridad(runObjetivo, Set.of("ADMIN", "DIRECTIVO"))) {
-                throw new AccessDeniedException("Inspector no puede actualizar directivos");
-            }
             return;
         }
 
@@ -350,19 +351,6 @@ public class UsuarioService {
                 .map(Usuario::getRunUsuario)
                 .filter(runApoderado::equals)
                 .isPresent();
-    }
-
-    private boolean esUsuarioConAutoridad(String runUsuario, Set<String> autoridadesBuscadas) {
-        return usuarioRepository.findById(runUsuario)
-                .map(Usuario::getRoles)
-                .orElse(List.of())
-                .stream()
-                .map(UsuarioRol::getRol)
-                .filter(Objects::nonNull)
-                .map(Rol::getNombreRol)
-                .filter(Objects::nonNull)
-                .map(nombreRol -> nombreRol.toUpperCase(Locale.ROOT))
-                .anyMatch(autoridadesBuscadas::contains);
     }
 
     private Authentication obtenerAutenticacion() {
