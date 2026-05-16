@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,10 +35,11 @@ public class MensajeriaController {
     @ApiResponse(responseCode = "201")
     @ApiResponse(responseCode = "401", description = "Token inválido")
     @ApiResponse(responseCode = "400", description = "Acción no permitida para el rol")
+    @ApiResponse(responseCode = "503", description = "Identidad no disponible")
     public ResponseEntity<MensajeriaDto> enviar(
             @Valid @RequestBody MensajeriaRequest solicitud,
             HttpServletRequest request) {
-        UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
+        UsuarioValidadoDto usuario = obtenerUsuarioAutenticado(request);
         MensajeriaDto respuesta = mensajeriaService.enviar(usuario, solicitud);
         return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
     }
@@ -47,10 +49,11 @@ public class MensajeriaController {
     @ApiResponse(responseCode = "201")
     @ApiResponse(responseCode = "401", description = "Token inválido")
     @ApiResponse(responseCode = "400", description = "Acción no permitida para el rol")
+    @ApiResponse(responseCode = "503", description = "Identidad no disponible")
     public ResponseEntity<MensajeriaDto> enviarMasivo(
             @Valid @RequestBody MensajeMasivoRequest solicitud,
             HttpServletRequest request) {
-        UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
+        UsuarioValidadoDto usuario = obtenerUsuarioAutenticado(request);
         MensajeriaDto respuesta = mensajeriaService.enviarMasivo(usuario, solicitud);
         return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
     }
@@ -60,29 +63,42 @@ public class MensajeriaController {
     @ApiResponse(responseCode = "201")
     @ApiResponse(responseCode = "401", description = "Token inválido")
     @ApiResponse(responseCode = "400", description = "Acción no permitida para el rol")
+    @ApiResponse(responseCode = "503", description = "Identidad no disponible")
     public ResponseEntity<MensajeriaDto> responder(
             @PathVariable Integer idMensaje,
             @Valid @RequestBody MensajeriaRequest solicitud,
             HttpServletRequest request) {
-        UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
+        UsuarioValidadoDto usuario = obtenerUsuarioAutenticado(request);
         MensajeriaDto respuesta = mensajeriaService.responder(usuario, idMensaje, solicitud);
         return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
     }
 
     @GetMapping("/recibidos")
     @Operation(summary = "Listar mensajes recibidos")
+    @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "401", description = "Token inválido")
+    @ApiResponse(responseCode = "503", description = "Identidad no disponible")
     public ResponseEntity<List<MensajeriaDto>> recibidos(HttpServletRequest request) {
-        UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
+        UsuarioValidadoDto usuario = obtenerUsuarioAutenticado(request);
         return ResponseEntity.ok(mensajeriaService.obtenerRecibidos(usuario));
     }
 
     @GetMapping("/enviados")
     @Operation(summary = "Listar mensajes enviados")
+    @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "401", description = "Token inválido")
     @ApiResponse(responseCode = "400", description = "Acción no permitida para el rol")
+    @ApiResponse(responseCode = "503", description = "Identidad no disponible")
     public ResponseEntity<List<MensajeriaDto>> enviados(HttpServletRequest request) {
-        UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
+        UsuarioValidadoDto usuario = obtenerUsuarioAutenticado(request);
         return ResponseEntity.ok(mensajeriaService.obtenerEnviados(usuario));
+    }
+
+    private UsuarioValidadoDto obtenerUsuarioAutenticado(HttpServletRequest request) {
+        Object usuario = request.getAttribute("usuarioAutenticado");
+        if (usuario instanceof UsuarioValidadoDto usuarioValidado) {
+            return usuarioValidado;
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
     }
 }
