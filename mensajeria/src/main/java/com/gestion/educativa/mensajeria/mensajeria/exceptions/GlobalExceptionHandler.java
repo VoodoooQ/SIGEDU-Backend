@@ -4,11 +4,13 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,6 +36,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> manejarIlegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.badRequest().body(crearError(400, ex.getMessage()));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> manejarResponseStatus(ResponseStatusException ex) {
+        int estado = ex.getStatusCode().value();
+        String mensaje = ex.getReason() != null ? ex.getReason() : ex.getStatusCode().toString();
+        return ResponseEntity.status(ex.getStatusCode()).body(crearError(estado, mensaje));
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<Map<String, Object>> manejarBaseDatos(DataAccessException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(crearError(500, "Error de base de datos en mensajería"));
     }
 
     @ExceptionHandler(RuntimeException.class)
