@@ -1,11 +1,11 @@
-package com.gestion.educativa.convivencia.convivencia.models.dto;
+package com.gestion.educativa.convivencia.convivencia.models.request;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
-public class HojaVidaEstudianteDto {
+public class HojaVidaRequest {
 
-	private Long id;
-
+	@NotNull(message = "El estudiante es requerido")
 	private Long estudianteId;
 
 	private String comportamiento;
@@ -18,25 +18,16 @@ public class HojaVidaEstudianteDto {
 
 	private String registradoPor;
 
-	public HojaVidaEstudianteDto() {
+	public HojaVidaRequest() {
 	}
 
-	public HojaVidaEstudianteDto(Long id, Long estudianteId, String comportamiento, String asistencia, String novedades, LocalDate fechaRegistro, String registradoPor) {
-		this.id = id;
+	public HojaVidaRequest(Long estudianteId, String comportamiento, String asistencia, String novedades, LocalDate fechaRegistro, String registradoPor) {
 		this.estudianteId = estudianteId;
 		this.comportamiento = comportamiento;
 		this.asistencia = asistencia;
 		this.novedades = novedades;
 		this.fechaRegistro = fechaRegistro;
 		this.registradoPor = registradoPor;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public Long getEstudianteId() {
