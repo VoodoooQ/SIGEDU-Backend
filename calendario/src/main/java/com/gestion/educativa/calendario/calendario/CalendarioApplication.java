@@ -1,4 +1,4 @@
-package com.gestion.educativa.difusion.calendario;
+package com.gestion.educativa.calendario.calendario;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
