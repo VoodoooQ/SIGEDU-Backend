@@ -2,7 +2,7 @@
 @identidad = http://127.0.0.1:8080
 @academica = http://127.0.0.1:8083
 @mensajeria = http://127.0.0.1:8089
-@token = REEMPLAZAR_CON_TOKEN
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3OCIsInJvbGVzIjpbIkFETUlOIiwiRElSRUNUSVZPIl0sImlhdCI6MTc3OTExMjU4OSwiZXhwIjoxNzc5MTk4OTg5fQ.i8pQzdajqK9jaDzvBmiWY_g-2P3q_TztJOQzRi6_R-4
 
 ### 1) Login en Identidad
 POST {{identidad}}/api/auth/login
