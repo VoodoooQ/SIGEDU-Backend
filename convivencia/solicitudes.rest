@@ -1,0 +1,57 @@
+﻿### Variables
+@identidad = http://127.0.0.1:8080
+@convivencia = http://127.0.0.1:8085
+@mensajeria = http://127.0.0.1:8089
+@token = REEMPLAZAR_CON_TOKEN
+
+### 1) Login en Identidad
+POST {{identidad}}/api/auth/login
+Content-Type: application/json
+
+{
+  "runUsuario": "12345678",
+  "contrasena": "M@DC1425"
+}
+
+### 2) Verificar usuario en Identidad (flujo base)
+GET {{identidad}}/api/usuarios/12345678/5
+Authorization: Bearer {{token}}
+
+### 3) Crear hoja de vida
+POST {{convivencia}}/api/convivencia/hoja-vida
+Content-Type: application/json
+
+{
+  "estudianteId": 1,
+  "comportamiento": "Bueno",
+  "asistencia": "Regular",
+  "novedades": "Sin novedades graves",
+  "fechaRegistro": "2026-05-20",
+  "registradoPor": "Inspector General"
+}
+
+### 4) Crear anotacion
+POST {{convivencia}}/api/convivencia/anotaciones
+Content-Type: application/json
+
+{
+  "estudianteId": 1,
+  "fecha": "2026-05-20",
+  "tipo": "POSITIVA",
+  "descripcion": "Apoyo destacado en clase",
+  "registradoPor": "Docente jefe"
+}
+
+### 5) Consultar anotaciones por estudiante
+GET {{convivencia}}/api/convivencia/anotaciones/estudiante/1
+
+### 6) Flujo coherente: notificar a traves de mensajeria
+POST {{mensajeria}}/api/mensajeria/enviar
+Content-Type: application/json
+
+{
+  "runEmisor": "12345678-5",
+  "asunto": "Registro convivencia",
+  "contenido": "Se ha registrado una anotacion en convivencia",
+  "runReceptor": "12345678"
+}

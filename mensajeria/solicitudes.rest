@@ -1,0 +1,44 @@
+### Variables
+@mensajeria = http://127.0.0.1:8089
+@reuniones = http://127.0.0.1:8082
+
+### 1) Ver mensajes recibidos del usuario
+GET {{mensajeria}}/api/mensajeria/recibidos?runUsuario=12345678-5
+
+### 2) Enviar mensaje directo
+POST {{mensajeria}}/api/mensajeria/enviar
+Content-Type: application/json
+
+{
+  "runEmisor": "12345678-5",
+  "asunto": "Aviso institucional",
+  "contenido": "Se informa actividad para manana",
+  "runReceptor": "22222222-2"
+}
+
+### 3) Enviar mensaje masivo
+POST {{mensajeria}}/api/mensajeria/masivo
+Content-Type: application/json
+
+{
+  "runEmisor": "12345678-5",
+  "asunto": "Comunicado general",
+  "contenido": "Revisar plataforma institucional"
+}
+
+### 4) Responder mensaje id 1
+POST {{mensajeria}}/api/mensajeria/responder/1
+Content-Type: application/json
+
+{
+  "runEmisor": "22222222-2",
+  "asunto": "Re: Aviso institucional",
+  "contenido": "Recibido, muchas gracias",
+  "runReceptor": "12345678-5"
+}
+
+### 5) Ver mensajes enviados por usuario
+GET {{mensajeria}}/api/mensajeria/enviados?runUsuario=12345678-5
+
+### 6) Flujo coherente: leer acuerdos de reuniones
+GET {{reuniones}}/api/acuerdos

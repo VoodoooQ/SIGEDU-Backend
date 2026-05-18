@@ -18,7 +18,7 @@ public class BitacoraAsignaturaService {
     private AsignaturaRepository asignaturaRepository;
 
     
-    public BitacoraAsignatura registrarBitacoraAsignatura(AgregarBitacora request,String run) {
+    public BitacoraAsignatura registrarBitacoraAsignatura(AgregarBitacora request, String run) {
         BitacoraAsignatura bitacora = new BitacoraAsignatura();
         bitacora.setFecha(request.getFecha());
         bitacora.setContenido_visto(request.getContenido_visto());
@@ -28,7 +28,11 @@ public class BitacoraAsignaturaService {
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Asignatura no encontrada"));
         bitacora.setId_asignatura(asig.getId_asignatura());
 
-        bitacora.setRun_docente_ref(run);
+        String runDocente = (run != null && !run.isBlank()) ? run : asig.getRun_docente_ref();
+        if (runDocente == null || runDocente.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No fue posible determinar el docente de la bitacora");
+        }
+        bitacora.setRun_docente_ref(runDocente);
 
         return bitacoraAsignaturaRepository.save(bitacora);
     }

@@ -1,0 +1,32 @@
+﻿### Variables
+@identidad = http://127.0.0.1:8080
+@academica = http://127.0.0.1:8083
+@mensajeria = http://127.0.0.1:8089
+@token = REEMPLAZAR_CON_TOKEN
+
+### 1) Login en Identidad
+POST {{identidad}}/api/auth/login
+Content-Type: application/json
+
+{
+  "runUsuario": "12345678",
+  "contrasena": "M@DC1425"
+}
+
+### 2) Obtener usuario por RUN/DV
+GET {{identidad}}/api/usuarios/12345678/5
+Authorization: Bearer {{token}}
+
+### 3) Listar usuarios
+GET {{identidad}}/api/usuarios
+Authorization: Bearer {{token}}
+
+### 4) Listar roles
+GET {{identidad}}/api/roles
+Authorization: Bearer {{token}}
+
+### 5) Flujo coherente: consumir Academica
+GET {{academica}}/api/academica/niveles
+
+### 6) Flujo coherente: consumir Mensajeria por runUsuario
+GET {{mensajeria}}/api/mensajeria/recibidos?runUsuario=12345678-5

@@ -1,0 +1,45 @@
+### Variables
+@calendario = http://127.0.0.1:8084
+@reuniones = http://127.0.0.1:8082
+@mensajeria = http://127.0.0.1:8089
+
+### 1) Crear evento calendario
+POST {{calendario}}/api/calendario/eventos
+Content-Type: application/json
+
+{
+  "nombre": "Reunion de apoderados",
+  "descripcion": "Convocatoria general",
+  "fechaInicio": "2026-05-25",
+  "fechaFin": "2026-05-25",
+  "horaInicio": "18:30:00",
+  "horaFin": "20:00:00",
+  "tipo": "REUNION",
+  "ubicacion": "Salon principal",
+  "activo": true
+}
+
+### 2) Consultar evento por tipo
+GET {{calendario}}/api/calendario/eventos/tipo/REUNION
+
+### 3) Flujo coherente: registrar reunion relacionada
+POST {{reuniones}}/api/reuniones/generales
+Content-Type: application/json
+
+{
+  "fechaReunion": "2026-05-25",
+  "horaReunion": "18:30:00",
+  "lugar": "Salon principal",
+  "tema": "Reunion de apoderados",
+  "observaciones": "Evento originado desde calendario"
+}
+
+### 4) Flujo coherente: notificar por mensajeria
+POST {{mensajeria}}/api/mensajeria/masivo
+Content-Type: application/json
+
+{
+  "runEmisor": "12345678-5",
+  "asunto": "Recordatorio reunion",
+  "contenido": "La reunion de apoderados sera el 25-05-2026 a las 18:30"
+}

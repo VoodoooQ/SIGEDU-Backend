@@ -1,10 +1,8 @@
 package com.gestion.educativa.mensajeria.mensajeria;
 
-import com.gestion.educativa.mensajeria.mensajeria.config.SecurityInterceptor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -16,15 +14,8 @@ public class MensajeriaApplication {
 	}
 
 	@Bean
-	public WebMvcConfigurer webMvcConfigurer(SecurityInterceptor securityInterceptor) {
+	public WebMvcConfigurer webMvcConfigurer() {
 		return new WebMvcConfigurer() {
-			@Override
-			public void addInterceptors(InterceptorRegistry registry) {
-				registry.addInterceptor(securityInterceptor)
-						.addPathPatterns("/api/**")
-						.excludePathPatterns("/swagger-ui/**", "/v3/api-docs/**");
-			}
-
 			@Override
 			public void addViewControllers(ViewControllerRegistry registry) {
 				registry.addRedirectViewController("/", "/swagger-ui/index.html");
