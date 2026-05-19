@@ -1,0 +1,42 @@
+﻿### Variables
+@identidad = http://127.0.0.1:8080
+@geografia = http://127.0.0.1:8086
+@token = REEMPLAZAR_CON_TOKEN
+
+### 1) Login en Identidad
+POST {{identidad}}/api/auth/login
+Content-Type: application/json
+
+{
+  "runUsuario": "12345678",
+  "contrasena": "M@DC1425"
+}
+
+### 2) Confirmar usuario existente
+GET {{identidad}}/api/usuarios/12345678/5
+Authorization: Bearer {{token}}
+
+### 3) Navegar jerarquia geografica
+GET {{geografia}}/api/paises
+
+### 4) Regiones de pais 1
+GET {{geografia}}/api/regiones/1
+
+### 5) Ciudades de region 1
+GET {{geografia}}/api/ciudades/1
+
+### 6) Comunas de ciudad 1
+GET {{geografia}}/api/comunas/1
+
+### 7) Crear direccion para usuario
+POST {{geografia}}/api/direcciones
+Content-Type: application/json
+
+{
+  "nombre_direccion": "Av. Siempre Viva 742",
+  "id_comuna": 1,
+  "run_usuario_ref": "12345678-5"
+}
+
+### 8) Consultar direcciones por RUN
+GET {{geografia}}/api/direcciones/12345678-5

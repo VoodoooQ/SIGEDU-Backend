@@ -3,7 +3,7 @@ package com.gestion.educativa.identidad.identidad.services;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import com.gestion.educativa.identidad.identidad.config.JwtConfig;
+import com.gestion.educativa.identidad.identidad.config.JwtTokenConfig;
 import com.gestion.educativa.identidad.identidad.models.dto.LoginResponse;
 import com.gestion.educativa.identidad.identidad.models.entity.Rol;
 import com.gestion.educativa.identidad.identidad.models.entity.Usuario;
@@ -23,7 +23,7 @@ public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtConfig jwtConfig;
+    private final JwtTokenConfig jwtConfig;
     @Value("${jwt.expiracion}")
     private long expiracionJwt;
 

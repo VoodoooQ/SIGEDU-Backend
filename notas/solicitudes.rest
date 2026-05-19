@@ -1,0 +1,53 @@
+﻿### Variables
+@identidad = http://127.0.0.1:8080
+@matricula = http://127.0.0.1:8088
+@notas = http://127.0.0.1:8090
+@token = REEMPLAZAR_CON_TOKEN
+
+### 1) Login en Identidad
+POST {{identidad}}/api/auth/login
+Content-Type: application/json
+
+{
+  "runUsuario": "12345678",
+  "contrasena": "M@DC1425"
+}
+
+### 2) Flujo coherente: validar matricula del estudiante
+GET {{matricula}}/api/matricula/12345678-5
+Authorization: Bearer {{token}}
+
+### 3) Crear nota
+POST {{notas}}/api/notas
+Content-Type: application/json
+
+{
+  "runEstudiante": "12345678-5",
+  "codigoAsignatura": "MAT-8A",
+  "periodo": "2026-1",
+  "tipoEvaluacion": "Prueba",
+  "ponderacion": 40.0,
+  "calificacion": 6.1,
+  "observaciones": "Buen rendimiento"
+}
+
+### 4) Listar notas
+GET {{notas}}/api/notas
+
+### 5) Actualizar nota id 1
+PUT {{notas}}/api/notas/1
+Content-Type: application/json
+
+{
+  "runEstudiante": "12345678-5",
+  "codigoAsignatura": "MAT-8A",
+  "periodo": "2026-1",
+  "tipoEvaluacion": "Prueba",
+  "ponderacion": 40.0,
+  "calificacion": 6.4,
+  "observaciones": "Nota ajustada por revision"
+}
+
+### 6) Confirmar usuario en Identidad
+GET {{identidad}}/api/usuarios/12345678/5
+Authorization: Bearer {{token}}

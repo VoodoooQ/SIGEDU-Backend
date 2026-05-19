@@ -1,0 +1,54 @@
+### Variables
+@reuniones = http://127.0.0.1:8082
+@mensajeria = http://127.0.0.1:8089
+
+### 1) Crear reunion general
+POST {{reuniones}}/api/reuniones/generales
+Content-Type: application/json
+
+{
+  "fechaReunion": "2026-06-01",
+  "horaReunion": "19:00:00",
+  "lugar": "Biblioteca",
+  "tema": "Planificacion mensual",
+  "observaciones": "Sesion ordinaria"
+}
+
+### 2) Crear reunion con apoderado
+POST {{reuniones}}/api/reuniones/apoderados
+Content-Type: application/json
+
+{
+  "fechaReunion": "2026-06-03",
+  "horaReunion": "18:00:00",
+  "runApoderado": "22222222-2",
+  "lugar": "Oficina convivencia",
+  "tema": "Seguimiento estudiante",
+  "observaciones": "Solicitada por inspector"
+}
+
+### 3) Crear acuerdo asociado a reunion general id 1
+POST {{reuniones}}/api/acuerdos
+Content-Type: application/json
+
+{
+  "idBitacoraReunionGeneral": 1,
+  "detalleAcuerdo": "Enviar circular a apoderados",
+  "responsable": "Inspector general",
+  "fechaCompromiso": "2026-06-05",
+  "estado": "PENDIENTE",
+  "observaciones": "Coordinar con mensajeria"
+}
+
+### 4) Listar acuerdos
+GET {{reuniones}}/api/acuerdos
+
+### 5) Flujo coherente: notificar acuerdo por mensajeria
+POST {{mensajeria}}/api/mensajeria/masivo
+Content-Type: application/json
+
+{
+  "runEmisor": "12345678-5",
+  "asunto": "Nuevo acuerdo de reunion",
+  "contenido": "Se ha definido un nuevo acuerdo institucional"
+}

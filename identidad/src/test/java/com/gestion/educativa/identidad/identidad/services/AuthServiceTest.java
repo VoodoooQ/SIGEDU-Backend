@@ -1,7 +1,7 @@
 package com.gestion.educativa.identidad.identidad.services;
 
 import java.util.Optional;
-import com.gestion.educativa.identidad.identidad.config.JwtConfig;
+import com.gestion.educativa.identidad.identidad.config.JwtTokenConfig;
 import com.gestion.educativa.identidad.identidad.models.entity.Usuario;
 import com.gestion.educativa.identidad.identidad.models.request.LoginRequest;
 import com.gestion.educativa.identidad.identidad.repositories.UsuarioRepository;
@@ -24,7 +24,7 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
-    private JwtConfig jwtConfig;
+    private JwtTokenConfig jwtConfig;
 
     @InjectMocks
     private AuthService authService;

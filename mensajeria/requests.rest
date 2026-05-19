@@ -1,111 +1,44 @@
-### ═══════════════════════════════════
-### VARIABLES
-### TODO-PUERTOS: actualizar cuando se definan puertos finales
-### MS0 Identidad corre en: 8080
-### MS5 Mensajería corre en: 8081
-### ═══════════════════════════════════
+### Variables
+@ms5 = http://localhost:8089
 
-@ms0 = http://localhost:8080
-@ms5 = http://localhost:8081
-@token = REEMPLAZAR_CON_TOKEN_OBTENIDO_DEL_LOGIN
-
-### ═══════════════════════════════════
-### PASO 1 — Login en MS0 Identidad
-### Ejecuta primero y copia el token
-### ═══════════════════════════════════
-
-### Login
-POST {{ms0}}/api/auth/login
-Content-Type: application/json
-
-{
-  "runUsuario": "12345678",
-  "contrasena": "M@DC1425"
-}
-
-### ═══════════════════════════════════
-### PASO 2 — Validar token (MS0)
-### ═══════════════════════════════════
-
-### Probar token en MS5
-GET {{ms5}}/api/mensajeria/recibidos
-Authorization: Bearer {{token}}
-
-### ═══════════════════════════════════
-### PASO 3 — Pruebas MS5 Mensajería
-### ═══════════════════════════════════
-
-### Enviar mensaje directo (DIRECTIVO, INSPECTOR, DOCENTE)
+### Enviar mensaje directo
 POST {{ms5}}/api/mensajeria/enviar
 Content-Type: application/json
-Authorization: Bearer {{token}}
 
 {
-  "asunto": "Reunión de apoderados",
-  "contenido": "Se convoca a reunión el viernes a las 19:00",
-  "runReceptor": "RUN_DESTINATARIO"
+  "runEmisor": "12345678-5",
+  "asunto": "Reunion de apoderados",
+  "contenido": "Se convoca a reunion el viernes a las 19:00",
+  "runReceptor": "22222222-2"
 }
 
 ###
-
-### Enviar mensaje masivo (solo DIRECTIVO o ADMIN)
+### Enviar mensaje masivo
 POST {{ms5}}/api/mensajeria/masivo
 Content-Type: application/json
-Authorization: Bearer {{token}}
 
 {
+  "runEmisor": "12345678-5",
   "asunto": "Comunicado general",
   "contenido": "Se informa a toda la comunidad escolar..."
 }
 
 ###
-
-### Responder mensaje (solo APODERADO)
-### Reemplaza 1 con el id_mensaje real
+### Responder mensaje recibido
 POST {{ms5}}/api/mensajeria/responder/1
 Content-Type: application/json
-Authorization: Bearer {{token}}
 
 {
-  "asunto": "Re: Reunión de apoderados",
-  "contenido": "Confirmo asistencia"
+  "runEmisor": "22222222-2",
+  "asunto": "Re: Reunion de apoderados",
+  "contenido": "Confirmo asistencia",
+  "runReceptor": "12345678-5"
 }
 
 ###
-
-### Ver mensajes recibidos
-GET {{ms5}}/api/mensajeria/recibidos
-Authorization: Bearer {{token}}
+### Ver mensajes recibidos por usuario
+GET {{ms5}}/api/mensajeria/recibidos?runUsuario=22222222-2
 
 ###
-
-### Ver mensajes enviados (DIRECTIVO, INSPECTOR, DOCENTE)
-GET {{ms5}}/api/mensajeria/enviados
-Authorization: Bearer {{token}}
-
-### ═══════════════════════════════════
-### PRUEBAS DE SEGURIDAD
-### ═══════════════════════════════════
-
-### Sin token → debe retornar 401
-GET {{ms5}}/api/mensajeria/recibidos
-
-###
-
-### Token inválido → debe retornar 401
-GET {{ms5}}/api/mensajeria/recibidos
-Authorization: Bearer token_invalido_123
-
-###
-
-### Rol sin permiso → debe retornar 400
-### (usar token de ESTUDIANTE e intentar enviar)
-POST {{ms5}}/api/mensajeria/enviar
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "asunto": "Intento de envío",
-  "contenido": "Estudiante intentando enviar",
-  "runReceptor": "12345678"
-}
+### Ver mensajes enviados por usuario
+GET {{ms5}}/api/mensajeria/enviados?runUsuario=12345678-5

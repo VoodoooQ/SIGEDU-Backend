@@ -19,8 +19,10 @@ public class AntecedentesMedicoService {
     private ValidarUsuarioService validarUsuarioService;
     public Antecedentes_Medicos agregarAntecedenteMedico(AgregarAntecedenteMedico request) {
         Antecedentes_Medicos nuevoAntecedenteMedico = new Antecedentes_Medicos();
-        nuevoAntecedenteMedico.setAlergico(request.isAlergico());
-        if (!request.isAlergico()) {
+
+        boolean esAlergico = Boolean.TRUE.equals(request.getAlergico());
+        nuevoAntecedenteMedico.setAlergico(esAlergico);
+        if (!esAlergico) {
             nuevoAntecedenteMedico.setAlergias(null);   
         }else{
             nuevoAntecedenteMedico.setAlergias(request.getAlergias());

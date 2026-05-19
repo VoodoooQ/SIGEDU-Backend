@@ -1,0 +1,212 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: sigedu-mysql
+    command: --default-authentication-plugin=mysql_native_password --max_connections=300
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+  identidad:
+    build: ./identidad
+    container_name: ms-identidad
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/identidad?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-32-bytes-minimum}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+  reuniones:
+    build: ./reuniones
+    container_name: ms-reuniones
+    ports:
+      - "8082:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/reuniones?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+  academica:
+    build: ./academica
+    container_name: ms-academica
+    ports:
+      - "8083:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/academica?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+  calendario:
+    build: ./calendario
+    container_name: ms-calendario
+    ports:
+      - "8084:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/calendario?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+  convivencia:
+    build: ./convivencia
+    container_name: ms-convivencia
+    ports:
+      - "8085:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/convivencia?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+  geografia:
+    build: ./geografia
+    container_name: ms-geografia
+    ports:
+      - "8086:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/geografia?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+  gestionacademica:
+    build: ./gestionacademica
+    container_name: ms-gestionacademica
+    ports:
+      - "8087:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/gestionacademica?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MS_ACADEMICA_URL: http://academica:8080
+      MS_IDENTIDAD_URL: http://identidad:8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+      academica:
+        condition: service_started
+      identidad:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+  matricula:
+    build: ./matricula
+    container_name: ms-matricula
+    ports:
+      - "8088:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/matricula?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MS_ACADEMICA_URL: http://academica:8080
+      MS_IDENTIDAD_URL: http://identidad:8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+      academica:
+        condition: service_started
+      identidad:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+  mensajeria:
+    build: ./mensajeria
+    container_name: ms-mensajeria
+    ports:
+      - "8089:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/mensajeria?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+  notas:
+    build: ./notas
+    container_name: ms-notas
+    ports:
+      - "8090:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://mysql:3306/notas?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sigedu-network
+
+networks:
+  sigedu-network:
+    driver: bridge
+
+volumes:
+  mysql-data:

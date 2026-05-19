@@ -2,7 +2,9 @@ package com.gestion.educativa.notas.notas.controller;
 
 import java.util.List;
 import com.gestion.educativa.notas.notas.models.entity.Nota;
+import com.gestion.educativa.notas.notas.models.request.NotaRequest;
 import com.gestion.educativa.notas.notas.services.NotaService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,14 +32,13 @@ public class NotaController {
     }
 
     @PostMapping
-    public ResponseEntity<Nota> crear(@RequestBody Nota nota) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notaService.guardar(nota));
+    public ResponseEntity<Nota> crear(@Valid @RequestBody NotaRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(notaService.crear(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Nota> actualizar(@PathVariable Long id, @RequestBody Nota nota) {
-        nota.setIdNota(id);
-        return ResponseEntity.ok(notaService.guardar(nota));
+    public ResponseEntity<Nota> actualizar(@PathVariable Long id, @Valid @RequestBody NotaRequest request) {
+        return ResponseEntity.ok(notaService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")

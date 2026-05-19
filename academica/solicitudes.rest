@@ -1,0 +1,87 @@
+﻿### Variables
+@identidad = http://127.0.0.1:8080
+@academica = http://127.0.0.1:8083
+@gestionacademica = http://127.0.0.1:8087
+@matricula = http://127.0.0.1:8088
+@token = REEMPLAZAR_CON_TOKEN
+
+### 1) Login en Identidad
+POST {{identidad}}/api/auth/login
+Content-Type: application/json
+
+{
+  "runUsuario": "12345678",
+  "contrasena": "M@DC1425"
+}
+
+### 2) Crear nivel academico
+POST {{academica}}/api/academica/niveles
+Content-Type: application/json
+
+{
+  "nombre": "Octavo Basico",
+  "descripcion": "Nivel base para flujo academico",
+  "activo": true
+}
+
+### 3) Crear periodo academico
+POST {{academica}}/api/academica/periodos
+Content-Type: application/json
+
+{
+  "nombre": "Primer Semestre 2026",
+  "fechaInicio": "2026-03-01",
+  "fechaFin": "2026-07-15",
+  "activo": true
+}
+
+### 4) Crear sala
+POST {{academica}}/api/academica/salas
+Content-Type: application/json
+
+{
+  "nombre": "Sala 8A",
+  "descripcion": "Sala principal de octavo",
+  "capacidad": 35,
+  "activo": true
+}
+
+### 5) Crear curso ligado al nivel/periodo/sala
+POST {{academica}}/api/academica/cursos
+Content-Type: application/json
+
+{
+  "nombre": "8A",
+  "descripcion": "Curso octavo A",
+  "nivelId": 1,
+  "periodoId": 1,
+  "salaId": 1,
+  "activo": true
+}
+
+### 6) Consultar cursos
+GET {{academica}}/api/academica/cursos
+
+### 7) Flujo coherente: usar academica desde gestionacademica
+POST {{gestionacademica}}/api/asignatura
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre_asignatura": "Matematicas",
+  "id_nivel_ref": 1,
+  "run_docente_ref": "12345678-5"
+}
+
+### 8) Flujo coherente: usar curso/periodo desde matricula
+POST {{matricula}}/api/matricula
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "anio_academico": 2026,
+  "estado": "ACTIVA",
+  "run_estudiante_ref": "12345678-5",
+  "id_curso_ref": 1,
+  "id_periodo_ref": 1
+}

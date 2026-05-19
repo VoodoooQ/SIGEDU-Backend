@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JwtConfig {
+public class JwtTokenConfig {
 
     @Value("${jwt.secreto}")
     private String secreto;

@@ -2,7 +2,9 @@ package com.gestion.educativa.reuniones.reuniones.controller;
 
 import java.util.List;
 import com.gestion.educativa.reuniones.reuniones.models.entity.Acuerdo;
+import com.gestion.educativa.reuniones.reuniones.models.request.AcuerdoRequest;
 import com.gestion.educativa.reuniones.reuniones.services.AcuerdoService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,14 +32,13 @@ public class AcuerdoController {
     }
 
     @PostMapping
-    public ResponseEntity<Acuerdo> crear(@RequestBody Acuerdo acuerdo) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(acuerdoService.guardar(acuerdo));
+    public ResponseEntity<Acuerdo> crear(@Valid @RequestBody AcuerdoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(acuerdoService.crear(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Acuerdo> actualizar(@PathVariable Long id, @RequestBody Acuerdo acuerdo) {
-        acuerdo.setIdAcuerdo(id);
-        return ResponseEntity.ok(acuerdoService.guardar(acuerdo));
+    public ResponseEntity<Acuerdo> actualizar(@PathVariable Long id, @Valid @RequestBody AcuerdoRequest request) {
+        return ResponseEntity.ok(acuerdoService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")

@@ -1,20 +1,24 @@
 package com.gestion.educativa.matricula.matricula.models.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class AgregarAntecedenteMedico {
-    @NotBlank    
-    private boolean alergico;
+    @NotNull
+    private Boolean alergico;
     
     private String alergias;
 
     private String medicacion;
-    @NotBlank    
+
+    @NotBlank
     private String prevision_salud;
-    @NotBlank    
+
+    @NotBlank
     private String tipo_sangre;
-    @NotBlank    
+
+    @NotBlank
     private String run_estudiante_ref;
 }

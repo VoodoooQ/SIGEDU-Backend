@@ -1,0 +1,69 @@
+﻿### Variables
+@identidad = http://127.0.0.1:8080
+@academica = http://127.0.0.1:8083
+@matricula = http://127.0.0.1:8088
+@geografia = http://127.0.0.1:8086
+@token = REEMPLAZAR_CON_TOKEN
+
+### 1) Login en Identidad
+POST {{identidad}}/api/auth/login
+Content-Type: application/json
+
+{
+  "runUsuario": "12345678",
+  "contrasena": "M@DC1425"
+}
+
+### 2) Verificar curso y periodo en Academica
+GET {{academica}}/api/academica/cursos/1
+
+###
+GET {{academica}}/api/academica/periodos/1
+
+### 3) Registrar matricula (valida usuario en Identidad)
+POST {{matricula}}/api/matricula
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "anio_academico": 2026,
+  "estado": "ACTIVA",
+  "run_estudiante_ref": "12345678-5",
+  "id_curso_ref": 1,
+  "id_periodo_ref": 1
+}
+
+### 4) Registrar antecedente academico
+POST {{matricula}}/api/antecedenteacademico
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "run_estudiante_ref": "12345678-5",
+  "colegio_procedencia": "Escuela Central",
+  "promedio_general": 5.9
+}
+
+### 5) Registrar antecedente medico
+POST {{matricula}}/api/antecedentemedico
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "alergico": false,
+  "medicacion": "Ninguna",
+  "prevision_salud": "Fonasa",
+  "tipo_sangre": "O+",
+  "run_estudiante_ref": "12345678-5"
+}
+
+### 6) Registrar antecedente apoderado
+POST {{matricula}}/api/antecedenteapoderado
+Content-Type: application/json
+
+{
+  "run_apoderado_ref": "22222222-2"
+}
+
+### 7) Flujo coherente: consultar direccion del usuario en Geografia
+GET {{geografia}}/api/direcciones/12345678-5
