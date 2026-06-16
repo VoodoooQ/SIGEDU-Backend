@@ -46,4 +46,7 @@ public class Nota {
 
     @Column(name = "observaciones", length = 500)
     private String observaciones;
+
+    @Column(name = "run_docente_ref", length = 12)
+    private String runDocenteRef;
 }

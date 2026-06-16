@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface HojaVidaEstudianteRepository extends JpaRepository<HojaVidaEstudiante, Long> {
-	
-	List<HojaVidaEstudiante> findByEstudianteId(Long estudianteId);
-
+    List<HojaVidaEstudiante> findByRunEstudianteRef(String runEstudianteRef);
 }

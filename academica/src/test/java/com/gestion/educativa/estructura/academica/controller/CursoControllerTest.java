@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.net.URI;
 import java.util.List;
@@ -40,7 +41,7 @@ class CursoControllerTest {
         c.setNombre("Química");
         when(service.findAll()).thenReturn(List.of(c));
 
-        var resp = controller.list();
+        var resp = controller.list(new MockHttpServletRequest());
 
         assertEquals(200, resp.getStatusCode().value());
         assertEquals(1L, resp.getBody().get(0).getId());
@@ -57,7 +58,7 @@ class CursoControllerTest {
 
         when(service.create(any(CursoRequest.class))).thenReturn(created);
 
-        var resp = controller.create(req);
+        var resp = controller.create(req, new MockHttpServletRequest());
 
         assertEquals(201, resp.getStatusCode().value());
         assertEquals(URI.create("/api/academica/cursos/5"), resp.getHeaders().getLocation());
@@ -71,7 +72,7 @@ class CursoControllerTest {
         c.setNombre("Biología");
         when(service.findById(2L)).thenReturn(c);
 
-        var resp = controller.get(2L);
+        var resp = controller.get(2L, new MockHttpServletRequest());
 
         assertEquals(200, resp.getStatusCode().value());
         assertEquals(2L, resp.getBody().getId());
@@ -81,7 +82,7 @@ class CursoControllerTest {
     void deleteShouldReturnNoContent() {
         doNothing().when(service).delete(3L);
 
-        var resp = controller.delete(3L);
+        var resp = controller.delete(3L, new MockHttpServletRequest());
 
         assertEquals(204, resp.getStatusCode().value());
         assertNull(resp.getBody());

@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MensajeriaRequest {
 
-    @NotBlank(message = "El runEmisor es obligatorio")
     private String runEmisor;
 
     @NotBlank(message = "El asunto es obligatorio")

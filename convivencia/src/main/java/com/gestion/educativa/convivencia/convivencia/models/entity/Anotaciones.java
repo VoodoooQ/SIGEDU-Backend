@@ -7,80 +7,46 @@ import java.time.LocalDate;
 @Table(name = "anotaciones")
 public class Anotaciones {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(nullable = false)
-	private Long estudianteId;
+    @Column(name = "run_estudiante_ref", nullable = false)
+    private String runEstudianteRef;
 
-	@Column(nullable = false)
-	private LocalDate fecha;
+    @Column(nullable = false)
+    private LocalDate fecha;
 
-	@Column(nullable = false)
-	private String tipo;
+    @Column(nullable = false)
+    private String tipo;
 
-	@Column(nullable = false, length = 1000)
-	private String descripcion;
+    @Column(nullable = false, length = 1000)
+    private String descripcion;
 
-	private String registradoPor;
+    @Column(name = "run_autor_ref")
+    private String runAutorRef;
 
-	public Anotaciones() {
-	}
+    public Anotaciones() {
+    }
 
-	public Anotaciones(Long estudianteId, LocalDate fecha, String tipo, String descripcion, String registradoPor) {
-		this.estudianteId = estudianteId;
-		this.fecha = fecha;
-		this.tipo = tipo;
-		this.descripcion = descripcion;
-		this.registradoPor = registradoPor;
-	}
+    public Anotaciones(String runEstudianteRef, LocalDate fecha, String tipo, String descripcion, String runAutorRef) {
+        this.runEstudianteRef = runEstudianteRef;
+        this.fecha = fecha;
+        this.tipo = tipo;
+        this.descripcion = descripcion;
+        this.runAutorRef = runAutorRef;
+    }
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public Long getEstudianteId() {
-		return estudianteId;
-	}
-
-	public void setEstudianteId(Long estudianteId) {
-		this.estudianteId = estudianteId;
-	}
-
-	public LocalDate getFecha() {
-		return fecha;
-	}
-
-	public void setFecha(LocalDate fecha) {
-		this.fecha = fecha;
-	}
-
-	public String getTipo() {
-		return tipo;
-	}
-
-	public void setTipo(String tipo) {
-		this.tipo = tipo;
-	}
-
-	public String getDescripcion() {
-		return descripcion;
-	}
-
-	public void setDescripcion(String descripcion) {
-		this.descripcion = descripcion;
-	}
-
-	public String getRegistradoPor() {
-		return registradoPor;
-	}
-
-	public void setRegistradoPor(String registradoPor) {
-		this.registradoPor = registradoPor;
-	}
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getRunEstudianteRef() { return runEstudianteRef; }
+    public void setRunEstudianteRef(String runEstudianteRef) { this.runEstudianteRef = runEstudianteRef; }
+    public LocalDate getFecha() { return fecha; }
+    public void setFecha(LocalDate fecha) { this.fecha = fecha; }
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getRunAutorRef() { return runAutorRef; }
+    public void setRunAutorRef(String runAutorRef) { this.runAutorRef = runAutorRef; }
 }

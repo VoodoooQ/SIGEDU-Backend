@@ -3,87 +3,26 @@ package com.gestion.educativa.convivencia.convivencia.models.dto;
 import java.time.LocalDate;
 
 public class HojaVidaEstudianteDto {
+    private Long id;
+    private String runEstudianteRef;
+    private String comportamiento;
+    private String asistencia;
+    private String novedades;
+    private LocalDate fechaRegistro;
+    private String runAutorRef;
 
-	private Long id;
-
-	private Long estudianteId;
-
-	private String comportamiento;
-
-	private String asistencia;
-
-	private String novedades;
-
-	private LocalDate fechaRegistro;
-
-	private String registradoPor;
-
-	public HojaVidaEstudianteDto() {
-	}
-
-	public HojaVidaEstudianteDto(Long id, Long estudianteId, String comportamiento, String asistencia, String novedades, LocalDate fechaRegistro, String registradoPor) {
-		this.id = id;
-		this.estudianteId = estudianteId;
-		this.comportamiento = comportamiento;
-		this.asistencia = asistencia;
-		this.novedades = novedades;
-		this.fechaRegistro = fechaRegistro;
-		this.registradoPor = registradoPor;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public Long getEstudianteId() {
-		return estudianteId;
-	}
-
-	public void setEstudianteId(Long estudianteId) {
-		this.estudianteId = estudianteId;
-	}
-
-	public String getComportamiento() {
-		return comportamiento;
-	}
-
-	public void setComportamiento(String comportamiento) {
-		this.comportamiento = comportamiento;
-	}
-
-	public String getAsistencia() {
-		return asistencia;
-	}
-
-	public void setAsistencia(String asistencia) {
-		this.asistencia = asistencia;
-	}
-
-	public String getNovedades() {
-		return novedades;
-	}
-
-	public void setNovedades(String novedades) {
-		this.novedades = novedades;
-	}
-
-	public LocalDate getFechaRegistro() {
-		return fechaRegistro;
-	}
-
-	public void setFechaRegistro(LocalDate fechaRegistro) {
-		this.fechaRegistro = fechaRegistro;
-	}
-
-	public String getRegistradoPor() {
-		return registradoPor;
-	}
-
-	public void setRegistradoPor(String registradoPor) {
-		this.registradoPor = registradoPor;
-	}
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getRunEstudianteRef() { return runEstudianteRef; }
+    public void setRunEstudianteRef(String runEstudianteRef) { this.runEstudianteRef = runEstudianteRef; }
+    public String getComportamiento() { return comportamiento; }
+    public void setComportamiento(String comportamiento) { this.comportamiento = comportamiento; }
+    public String getAsistencia() { return asistencia; }
+    public void setAsistencia(String asistencia) { this.asistencia = asistencia; }
+    public String getNovedades() { return novedades; }
+    public void setNovedades(String novedades) { this.novedades = novedades; }
+    public LocalDate getFechaRegistro() { return fechaRegistro; }
+    public void setFechaRegistro(LocalDate fechaRegistro) { this.fechaRegistro = fechaRegistro; }
+    public String getRunAutorRef() { return runAutorRef; }
+    public void setRunAutorRef(String runAutorRef) { this.runAutorRef = runAutorRef; }
 }
