@@ -14,38 +14,44 @@
 @ms7 = http://localhost:8087
 @ms8 = http://localhost:8084
 @ms9 = http://localhost:8083
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3OCIsInJvbGVzIjpbIkFETUlOIiwiRElSRUNUSVZPIl0sImlhdCI6MTc4MTA1NjY5OSwiZXhwIjoxNzgxMTQzMDk5fQ.HDGPKWvourrKTl7iDcpkI_7mzHZstXr3tb2zwxLvwKQ
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3OCIsInJvbGVzIjpbIkFETUlOIiwiRElSRUNUSVZPIl0sImlhdCI6MTc4MjMyODAyNiwiZXhwIjoxNzgyNDE0NDI2fQ.djQA6tdnV5gYdSQVEyAfodLzg4yupbajnr5TpUbgEsU
 @invalidToken = token-invalido
 @runDirectivo = 12345678
 @dvDirectivo = 5
 @runNuevoUsuario = 23456789
 @dvNuevoUsuario = 6
+@runDocente = 11111111
+@dvDocente = 1
+@runEstudiante = 22222222
+@dvEstudiante = 2
+@runApoderado = 33333333
+@dvApoderado = 3
 @idRol = 1
-@idCurso = 1
-@idNivel = 1
-@idPeriodo = 1
-@idSala = 1
-@idDireccion = 1
-@idReunionGeneral = 1
-@idReunionApoderado = 1
-@idReunionP1A1 = 1
-@idAcuerdo = 1
-@idMatricula = 1
-@idAnotacion = 1
-@idHojaVida = 1
-@idNota = 1
+@idCurso = 4
+@idNivel = 4
+@idPeriodo = 4
+@idSala = 4
+@idDireccion = 3
+@idReunionGeneral = 9
+@idReunionApoderado = 10
+@idReunionP1A1 = 9
+@idAcuerdo = 9
+@idMatricula = 2
+@idAnotacion = 8
+@idHojaVida = 7
+@idNota = 7
 @idAsignatura = 1
 @idBitacora = 1
 @idObjetivo = 1
-@idEvento = 1
-@idAntecedenteAcademico = 1
-@idAntecedenteApoderado = 1
-@idAntecedenteMedico = 1
+@idEvento = 9
+@idAntecedenteAcademico = 7
+@idAntecedenteApoderado = 5
+@idAntecedenteMedico = 7
 
 # ============================================================
-# SECCI�N 0 � AUTENTICACI�N
+# SECCIÃƒÂ¯Ã‚Â¿Ã‚Â½N 0 ÃƒÂ¯Ã‚Â¿Ã‚Â½ AUTENTICACIÃƒÂ¯Ã‚Â¿Ã‚Â½N
 # 1) Ejecuta login
-# 2) Si el token expir�, copia el token de la respuesta y p�galo en @token
+# 2) Si el token expirÃƒÂ¯Ã‚Â¿Ã‚Â½, copia el token de la respuesta y pÃƒÂ¯Ã‚Â¿Ã‚Â½galo en @token
 # 3) Ejecuta /api/auth/validar para confirmar 200
 # ============================================================
 
@@ -84,7 +90,7 @@ Content-Type: application/json
   "dvrunUsuario": "6",
   "pNombreUsuario": "Carla",
   "osNombreUsuario": "Andrea",
-  "pApellidoUsuario": "P�rez",
+  "pApellidoUsuario": "PÃƒÂ¯Ã‚Â¿Ã‚Â½rez",
   "osApellidoUsuario": "Soto",
   "correoUsuario": "carla.perez@sigedu.cl",
   "telefonoUsuario": "912345678",
@@ -103,7 +109,7 @@ Content-Type: application/json
 {
   "pNombreUsuario": "Carla",
   "osNombreUsuario": "Andrea",
-  "pApellidoUsuario": "P�rez",
+  "pApellidoUsuario": "PÃƒÂ¯Ã‚Â¿Ã‚Â½rez",
   "osApellidoUsuario": "Rojas",
   "correoUsuario": "carla.rojas@sigedu.cl",
   "telefonoUsuario": "998877665",
@@ -139,15 +145,15 @@ Authorization: Bearer {{token}}
 # MS1 geografia
 # ============================================================
 
-### MS1 - Listar pa�ses
+### MS1 - Listar paÃƒÂ¯Ã‚Â¿Ã‚Â½ses
 GET {{ms1}}/api/paises
 Authorization: Bearer {{token}}
 
-### MS1 - Listar regiones por pa�s
+### MS1 - Listar regiones por paÃƒÂ¯Ã‚Â¿Ã‚Â½s
 GET {{ms1}}/api/regiones/1
 Authorization: Bearer {{token}}
 
-### MS1 - Listar ciudades por regi�n
+### MS1 - Listar ciudades por regiÃƒÂ¯Ã‚Â¿Ã‚Â½n
 GET {{ms1}}/api/ciudades/1
 Authorization: Bearer {{token}}
 
@@ -155,7 +161,7 @@ Authorization: Bearer {{token}}
 GET {{ms1}}/api/comunas/1
 Authorization: Bearer {{token}}
 
-### MS1 - Crear direcci�n
+### MS1 - Crear direcciÃƒÂ¯Ã‚Â¿Ã‚Â½n
 POST {{ms1}}/api/direcciones
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -163,10 +169,10 @@ Content-Type: application/json
 {
   "nombre_direccion": "Av. Libertador Bernardo O'Higgins 1234",
   "id_comuna": 1,
-  "run_usuario_ref": "12345678"
+  "run_usuario_ref": "{{runEstudiante}}"
 }
 
-### MS1 - Modificar direcci�n
+### MS1 - Modificar direcciÃƒÂ¯Ã‚Â¿Ã‚Â½n
 PUT {{ms1}}/api/direcciones/modificar/{{idDireccion}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -180,7 +186,7 @@ Content-Type: application/json
 GET {{ms1}}/api/direcciones/{{runDirectivo}}
 Authorization: Bearer {{token}}
 
-### MS1 - Eliminar direcci�n
+### MS1 - Eliminar direcciÃƒÂ¯Ã‚Â¿Ã‚Â½n
 DELETE {{ms1}}/api/direcciones/{{idDireccion}}
 Authorization: Bearer {{token}}
 
@@ -192,11 +198,11 @@ Authorization: Bearer {{token}}
 GET {{ms2}}/api/reuniones/generales
 Authorization: Bearer {{token}}
 
-### MS2 - Obtener reuni�n general por id
+### MS2 - Obtener reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n general por id
 GET {{ms2}}/api/reuniones/generales/{{idReunionGeneral}}
 Authorization: Bearer {{token}}
 
-### MS2 - Crear reuni�n general
+### MS2 - Crear reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n general
 POST {{ms2}}/api/reuniones/generales
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -205,11 +211,11 @@ Content-Type: application/json
   "fechaReunion": "2026-03-10",
   "horaReunion": "09:00:00",
   "lugar": "Sala de Consejo",
-  "tema": "Planificaci�n primer semestre",
+  "tema": "PlanificaciÃƒÂ¯Ã‚Â¿Ã‚Â½n primer semestre",
   "observaciones": "Asisten directivos e inspectores"
 }
 
-### MS2 - Actualizar reuni�n general
+### MS2 - Actualizar reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n general
 PUT {{ms2}}/api/reuniones/generales/{{idReunionGeneral}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -218,11 +224,11 @@ Content-Type: application/json
   "fechaReunion": "2026-03-11",
   "horaReunion": "10:00:00",
   "lugar": "Sala de Consejo",
-  "tema": "Planificaci�n actualizada",
+  "tema": "PlanificaciÃƒÂ¯Ã‚Â¿Ã‚Â½n actualizada",
   "observaciones": "Horario ajustado"
 }
 
-### MS2 - Eliminar reuni�n general
+### MS2 - Eliminar reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n general
 DELETE {{ms2}}/api/reuniones/generales/{{idReunionGeneral}}
 Authorization: Bearer {{token}}
 
@@ -230,11 +236,11 @@ Authorization: Bearer {{token}}
 GET {{ms2}}/api/reuniones/apoderados
 Authorization: Bearer {{token}}
 
-### MS2 - Obtener reuni�n con apoderado por id
+### MS2 - Obtener reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n con apoderado por id
 GET {{ms2}}/api/reuniones/apoderados/{{idReunionApoderado}}
 Authorization: Bearer {{token}}
 
-### MS2 - Crear reuni�n con apoderado
+### MS2 - Crear reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n con apoderado
 POST {{ms2}}/api/reuniones/apoderados
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -242,13 +248,13 @@ Content-Type: application/json
 {
   "fechaReunion": "2026-03-12",
   "horaReunion": "11:30:00",
-  "runApoderado": "12345678",
-  "lugar": "Inspector�a",
-  "tema": "Situaci�n disciplinaria",
-  "observaciones": "Reuni�n preventiva"
+  "runApoderado": "{{runApoderado}}",
+  "lugar": "InspectorÃƒÂ¯Ã‚Â¿Ã‚Â½a",
+  "tema": "SituaciÃƒÂ¯Ã‚Â¿Ã‚Â½n disciplinaria",
+  "observaciones": "ReuniÃƒÂ¯Ã‚Â¿Ã‚Â½n preventiva"
 }
 
-### MS2 - Actualizar reuni�n con apoderado
+### MS2 - Actualizar reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n con apoderado
 PUT {{ms2}}/api/reuniones/apoderados/{{idReunionApoderado}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -256,13 +262,13 @@ Content-Type: application/json
 {
   "fechaReunion": "2026-03-13",
   "horaReunion": "12:00:00",
-  "runApoderado": "12345678",
-  "lugar": "Inspector�a",
+  "runApoderado": "{{runApoderado}}",
+  "lugar": "InspectorÃƒÂ¯Ã‚Â¿Ã‚Â½a",
   "tema": "Seguimiento disciplinario",
   "observaciones": "Nueva fecha"
 }
 
-### MS2 - Eliminar reuni�n con apoderado
+### MS2 - Eliminar reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n con apoderado
 DELETE {{ms2}}/api/reuniones/apoderados/{{idReunionApoderado}}
 Authorization: Bearer {{token}}
 
@@ -270,11 +276,11 @@ Authorization: Bearer {{token}}
 GET {{ms2}}/api/reuniones/p1a1
 Authorization: Bearer {{token}}
 
-### MS2 - Obtener reuni�n P1A1 por id
+### MS2 - Obtener reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n P1A1 por id
 GET {{ms2}}/api/reuniones/p1a1/{{idReunionP1A1}}
 Authorization: Bearer {{token}}
 
-### MS2 - Crear reuni�n P1A1
+### MS2 - Crear reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n P1A1
 POST {{ms2}}/api/reuniones/p1a1
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -282,13 +288,13 @@ Content-Type: application/json
 {
   "fechaReunion": "2026-03-14",
   "horaReunion": "08:30:00",
-  "runEstudiante": "12345678",
+  "runEstudiante": "{{runEstudiante}}",
   "lugar": "Sala de Entrevistas",
-  "tema": "Acompa�amiento acad�mico",
+  "tema": "AcompaÃƒÂ¯Ã‚Â¿Ã‚Â½amiento acadÃƒÂ¯Ã‚Â¿Ã‚Â½mico",
   "observaciones": "Entrevista individual"
 }
 
-### MS2 - Actualizar reuni�n P1A1
+### MS2 - Actualizar reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n P1A1
 PUT {{ms2}}/api/reuniones/p1a1/{{idReunionP1A1}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -296,13 +302,13 @@ Content-Type: application/json
 {
   "fechaReunion": "2026-03-15",
   "horaReunion": "09:15:00",
-  "runEstudiante": "12345678",
+  "runEstudiante": "{{runEstudiante}}",
   "lugar": "Sala de Entrevistas",
-  "tema": "Acompa�amiento actualizado",
+  "tema": "AcompaÃƒÂ¯Ã‚Â¿Ã‚Â½amiento actualizado",
   "observaciones": "Reagendada"
 }
 
-### MS2 - Eliminar reuni�n P1A1
+### MS2 - Eliminar reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n P1A1
 DELETE {{ms2}}/api/reuniones/p1a1/{{idReunionP1A1}}
 Authorization: Bearer {{token}}
 
@@ -316,7 +322,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "idBitacoraReunionGeneral": 1,
+  "idBitacoraReunionGeneral": {{idReunionGeneral}},
   "detalleAcuerdo": "Preparar informe de seguimiento",
   "responsable": "Inspector General",
   "fechaCompromiso": "2026-03-20",
@@ -330,12 +336,12 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "idBitacoraReunionGeneral": 1,
+  "idBitacoraReunionGeneral": {{idReunionGeneral}},
   "detalleAcuerdo": "Preparar informe de seguimiento actualizado",
   "responsable": "Inspector General",
   "fechaCompromiso": "2026-03-22",
   "estado": "EN_PROCESO",
-  "observaciones": "En revisi�n"
+  "observaciones": "En revisiÃƒÂ¯Ã‚Â¿Ã‚Â½n"
 }
 
 ### MS2 - Eliminar acuerdo
@@ -346,11 +352,11 @@ Authorization: Bearer {{token}}
 # MS3 matricula
 # ============================================================
 
-### MS3 - Listar matr�culas
+### MS3 - Listar matrÃƒÂ¯Ã‚Â¿Ã‚Â½culas
 GET {{ms3}}/api/matricula
 Authorization: Bearer {{token}}
 
-### MS3 - Crear matr�cula
+### MS3 - Crear matrÃƒÂ¯Ã‚Â¿Ã‚Â½cula
 POST {{ms3}}/api/matricula
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -358,16 +364,16 @@ Content-Type: application/json
 {
   "anio_academico": 2026,
   "estado": "ACTIVA",
-  "run_estudiante_ref": "12345678",
-  "id_curso_ref": 1,
-  "id_periodo_ref": 1
+  "run_estudiante_ref": "{{runEstudiante}}",
+  "id_curso_ref": {{idCurso}},
+  "id_periodo_ref": {{idPeriodo}}
 }
 
-### MS3 - Obtener matr�culas por estudiante
-GET {{ms3}}/api/matricula/12345678
+### MS3 - Obtener matrÃƒÂ¯Ã‚Â¿Ã‚Â½culas por estudiante
+GET {{ms3}}/api/matricula/{{runEstudiante}}
 Authorization: Bearer {{token}}
 
-### MS3 - Actualizar matr�cula
+### MS3 - Actualizar matrÃƒÂ¯Ã‚Â¿Ã‚Â½cula
 PUT {{ms3}}/api/matricula/{{idMatricula}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -375,42 +381,42 @@ Content-Type: application/json
 {
   "anio_academico": 2026,
   "estado": "REGULAR",
-  "run_estudiante_ref": "12345678",
-  "id_curso_ref": 1,
-  "id_periodo_ref": 1
+  "run_estudiante_ref": "{{runEstudiante}}",
+  "id_curso_ref": {{idCurso}},
+  "id_periodo_ref": {{idPeriodo}}
 }
 
-### MS3 - Eliminar matr�cula
+### MS3 - Eliminar matrÃƒÂ¯Ã‚Â¿Ã‚Â½cula
 DELETE {{ms3}}/api/matricula/{{idMatricula}}
 Authorization: Bearer {{token}}
 
-### MS3 - Crear antecedente acad�mico
+### MS3 - Crear antecedente acadÃƒÂ¯Ã‚Â¿Ã‚Â½mico
 POST {{ms3}}/api/antecedenteacademico
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "run_estudiante_ref": "12345678",
-  "colegio_procedencia": "Escuela B�sica Gabriela Mistral",
+  "run_estudiante_ref": "{{runEstudiante}}",
+  "colegio_procedencia": "Escuela BÃƒÂ¯Ã‚Â¿Ã‚Â½sica Gabriela Mistral",
   "promedio_general": 6.2
 }
 
-### MS3 - Obtener antecedente acad�mico
-GET {{ms3}}/api/antecedenteacademico/12345678
+### MS3 - Obtener antecedente acadÃƒÂ¯Ã‚Â¿Ã‚Â½mico
+GET {{ms3}}/api/antecedenteacademico/{{runEstudiante}}
 Authorization: Bearer {{token}}
 
-### MS3 - Actualizar antecedente acad�mico
+### MS3 - Actualizar antecedente acadÃƒÂ¯Ã‚Â¿Ã‚Â½mico
 PUT {{ms3}}/api/antecedenteacademico/{{idAntecedenteAcademico}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "run_estudiante_ref": "12345678",
+  "run_estudiante_ref": "{{runEstudiante}}",
   "colegio_procedencia": "Liceo Bicentenario de Santiago",
   "promedio_general": 6.5
 }
 
-### MS3 - Crear antecedente m�dico
+### MS3 - Crear antecedente mÃƒÂ¯Ã‚Â¿Ã‚Â½dico
 POST {{ms3}}/api/antecedentemedico
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -418,17 +424,17 @@ Content-Type: application/json
 {
   "alergico": true,
   "alergias": "Penicilina",
-  "medicacion": "Antihistam�nicos",
+  "medicacion": "AntihistamÃƒÂ¯Ã‚Â¿Ã‚Â½nicos",
   "prevision_salud": "FONASA",
   "tipo_sangre": "O+",
-  "run_estudiante_ref": "12345678"
+  "run_estudiante_ref": "{{runEstudiante}}"
 }
 
-### MS3 - Obtener antecedente m�dico
-GET {{ms3}}/api/antecedentemedico/12345678
+### MS3 - Obtener antecedente mÃƒÂ¯Ã‚Â¿Ã‚Â½dico
+GET {{ms3}}/api/antecedentemedico/{{runEstudiante}}
 Authorization: Bearer {{token}}
 
-### MS3 - Actualizar antecedente m�dico
+### MS3 - Actualizar antecedente mÃƒÂ¯Ã‚Â¿Ã‚Â½dico
 PUT {{ms3}}/api/antecedentemedico/{{idAntecedenteMedico}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -439,7 +445,7 @@ Content-Type: application/json
   "medicacion": "Ninguna",
   "prevision_salud": "FONASA",
   "tipo_sangre": "O+",
-  "run_estudiante_ref": "12345678"
+  "run_estudiante_ref": "{{runEstudiante}}"
 }
 
 ### MS3 - Crear antecedente apoderado
@@ -448,11 +454,11 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "run_apoderado_ref": "12345678"
+  "run_apoderado_ref": "{{runApoderado}}"
 }
 
 ### MS3 - Obtener antecedente apoderado
-GET {{ms3}}/api/antecedenteapoderado/12345678
+GET {{ms3}}/api/antecedenteapoderado/{{runApoderado}}
 Authorization: Bearer {{token}}
 
 ### MS3 - Actualizar antecedente apoderado
@@ -461,7 +467,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "run_apoderado_ref": "12345678"
+  "run_apoderado_ref": "{{runApoderado}}"
 }
 
 # ============================================================
@@ -472,39 +478,39 @@ Content-Type: application/json
 GET {{ms4}}/api/convivencia/anotaciones
 Authorization: Bearer {{token}}
 
-### MS4 - Obtener anotaci�n por id
+### MS4 - Obtener anotaciÃƒÂ¯Ã‚Â¿Ã‚Â½n por id
 GET {{ms4}}/api/convivencia/anotaciones/{{idAnotacion}}
 Authorization: Bearer {{token}}
 
 ### MS4 - Listar anotaciones por estudiante
-GET {{ms4}}/api/convivencia/anotaciones/estudiante/12345678
+GET {{ms4}}/api/convivencia/anotaciones/estudiante/{{runEstudiante}}
 Authorization: Bearer {{token}}
 
-### MS4 - Crear anotaci�n
+### MS4 - Crear anotaciÃƒÂ¯Ã‚Â¿Ã‚Â½n
 POST {{ms4}}/api/convivencia/anotaciones
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "runEstudianteRef": "12345678",
+  "runEstudianteRef": "{{runEstudiante}}",
   "fecha": "2026-03-18",
   "tipo": "OBSERVACION_POSITIVA",
   "descripcion": "Participa activamente en clases"
 }
 
-### MS4 - Actualizar anotaci�n
+### MS4 - Actualizar anotaciÃƒÂ¯Ã‚Â¿Ã‚Â½n
 PUT {{ms4}}/api/convivencia/anotaciones/{{idAnotacion}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "runEstudianteRef": "12345678",
+  "runEstudianteRef": "{{runEstudiante}}",
   "fecha": "2026-03-19",
   "tipo": "OBSERVACION_PREVENTIVA",
-  "descripcion": "Conversaci�n formativa con inspector�a"
+  "descripcion": "ConversaciÃƒÂ¯Ã‚Â¿Ã‚Â½n formativa con inspectorÃƒÂ¯Ã‚Â¿Ã‚Â½a"
 }
 
-### MS4 - Eliminar anotaci�n
+### MS4 - Eliminar anotaciÃƒÂ¯Ã‚Â¿Ã‚Â½n
 DELETE {{ms4}}/api/convivencia/anotaciones/{{idAnotacion}}
 Authorization: Bearer {{token}}
 
@@ -517,7 +523,7 @@ GET {{ms4}}/api/convivencia/hoja-vida/{{idHojaVida}}
 Authorization: Bearer {{token}}
 
 ### MS4 - Listar hoja de vida por estudiante
-GET {{ms4}}/api/convivencia/hoja-vida/estudiante/12345678
+GET {{ms4}}/api/convivencia/hoja-vida/estudiante/{{runEstudiante}}
 Authorization: Bearer {{token}}
 
 ### MS4 - Crear hoja de vida
@@ -526,7 +532,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "runEstudianteRef": "12345678",
+  "runEstudianteRef": "{{runEstudiante}}",
   "comportamiento": "Adecuado",
   "asistencia": "Regular",
   "novedades": "Sin novedades relevantes",
@@ -539,7 +545,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "runEstudianteRef": "12345678",
+  "runEstudianteRef": "{{runEstudiante}}",
   "comportamiento": "Muy adecuado",
   "asistencia": "Destacada",
   "novedades": "Mejora sostenida",
@@ -560,10 +566,10 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "runEmisor": "12345678",
-  "asunto": "Citaci�n a reuni�n",
-  "contenido": "Se solicita asistir a reuni�n de coordinaci�n el viernes.",
-  "runReceptor": "23456789"
+  "runEmisor": "{{runDirectivo}}",
+  "asunto": "CitaciÃƒÂ¯Ã‚Â¿Ã‚Â½n a reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n",
+  "contenido": "Se solicita asistir a reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n de coordinaciÃƒÂ¯Ã‚Â¿Ã‚Â½n el viernes.",
+  "runReceptor": "{{runDocente}}"
 }
 
 ### MS5 - Enviar mensaje masivo
@@ -572,9 +578,9 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "runEmisor": "12345678",
+  "runEmisor": "{{runDirectivo}}",
   "asunto": "Comunicado general",
-  "contenido": "Se informa ajuste de horario para la pr�xima semana."
+  "contenido": "Se informa ajuste de horario para la prÃƒÂ¯Ã‚Â¿Ã‚Â½xima semana."
 }
 
 ### MS5 - Responder mensaje
@@ -583,10 +589,10 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "runEmisor": "12345678",
-  "asunto": "Re: Citaci�n a reuni�n",
-  "contenido": "Confirmo recepci�n del mensaje.",
-  "runReceptor": "23456789"
+  "runEmisor": "{{runDirectivo}}",
+  "asunto": "Re: CitaciÃƒÂ¯Ã‚Â¿Ã‚Â½n a reuniÃƒÂ¯Ã‚Â¿Ã‚Â½n",
+  "contenido": "Confirmo recepciÃƒÂ¯Ã‚Â¿Ã‚Â½n del mensaje.",
+  "runReceptor": "{{runDocente}}"
 }
 
 ### MS5 - Listar mensajes recibidos
@@ -606,7 +612,7 @@ GET {{ms6}}/api/notas
 Authorization: Bearer {{token}}
 
 ### MS6 - Listar notas por estudiante
-GET {{ms6}}/api/notas/estudiante/12345678
+GET {{ms6}}/api/notas/estudiante/{{runEstudiante}}
 Authorization: Bearer {{token}}
 
 ### MS6 - Crear nota
@@ -615,13 +621,13 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "runEstudiante": "12345678",
-  "codigoAsignatura": "1",
+  "runEstudiante": "{{runEstudiante}}",
+  "codigoAsignatura": "{{idAsignatura}}",
   "periodo": "2026-1",
   "tipoEvaluacion": "PRUEBA_ESCRITA",
   "ponderacion": 30.0,
   "calificacion": 6.4,
-  "observaciones": "Buen desempe�o general"
+  "observaciones": "Buen desempeÃƒÂ¯Ã‚Â¿Ã‚Â½o general"
 }
 
 ### MS6 - Actualizar nota
@@ -630,13 +636,13 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "runEstudiante": "12345678",
-  "codigoAsignatura": "1",
+  "runEstudiante": "{{runEstudiante}}",
+  "codigoAsignatura": "{{idAsignatura}}",
   "periodo": "2026-1",
   "tipoEvaluacion": "PRUEBA_ESCRITA",
   "ponderacion": 35.0,
   "calificacion": 6.7,
-  "observaciones": "Se actualiza ponderaci�n"
+  "observaciones": "Se actualiza ponderaciÃƒÂ¯Ã‚Â¿Ã‚Â½n"
 }
 
 ### MS6 - Eliminar nota
@@ -661,9 +667,9 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "nombre_asignatura": "Lenguaje y Comunicaci�n",
-  "id_nivel_ref": 1,
-  "run_docente_ref": "12345678"
+  "nombre_asignatura": "Lenguaje y ComunicaciÃƒÂ¯Ã‚Â¿Ã‚Â½n",
+  "id_nivel_ref": {{idNivel}},
+  "run_docente_ref": "{{runDocente}}"
 }
 
 ### MS7 - Modificar asignatura
@@ -672,43 +678,43 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "nombre_asignatura": "Lenguaje y Comunicaci�n Avanzado",
-  "id_nivel_ref": 1,
-  "run_docente_ref": "12345678"
+  "nombre_asignatura": "Lenguaje y ComunicaciÃƒÂ¯Ã‚Â¿Ã‚Â½n Avanzado",
+  "id_nivel_ref": {{idNivel}},
+  "run_docente_ref": "{{runDocente}}"
 }
 
 ### MS7 - Eliminar asignatura
 DELETE {{ms7}}/api/asignatura/{{idAsignatura}}
 Authorization: Bearer {{token}}
 
-### MS7 - Listar bit�coras por asignatura
+### MS7 - Listar bitÃƒÂ¯Ã‚Â¿Ã‚Â½coras por asignatura
 GET {{ms7}}/api/bitacora/asignatura/{{idAsignatura}}
 Authorization: Bearer {{token}}
 
-### MS7 - Crear bit�cora
+### MS7 - Crear bitÃƒÂ¯Ã‚Â¿Ã‚Â½cora
 POST {{ms7}}/api/bitacora
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "fecha": "2026-03-21",
-  "contenido_visto": "Comprensi�n lectora y an�lisis de texto",
+  "contenido_visto": "ComprensiÃƒÂ¯Ã‚Â¿Ã‚Â½n lectora y anÃƒÂ¯Ã‚Â¿Ã‚Â½lisis de texto",
   "observaciones": "Curso participa activamente",
   "id_asignatura": 1
 }
 
-### MS7 - Modificar bit�cora
+### MS7 - Modificar bitÃƒÂ¯Ã‚Â¿Ã‚Â½cora
 PUT {{ms7}}/api/bitacora/{{idBitacora}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "contenido_visto": "Comprensi�n lectora, an�lisis y s�ntesis",
+  "contenido_visto": "ComprensiÃƒÂ¯Ã‚Â¿Ã‚Â½n lectora, anÃƒÂ¯Ã‚Â¿Ã‚Â½lisis y sÃƒÂ¯Ã‚Â¿Ã‚Â½ntesis",
   "observaciones": "Se refuerza trabajo grupal",
   "id_asignatura": 1
 }
 
-### MS7 - Eliminar bit�cora
+### MS7 - Eliminar bitÃƒÂ¯Ã‚Â¿Ã‚Â½cora
 DELETE {{ms7}}/api/bitacora/{{idBitacora}}
 Authorization: Bearer {{token}}
 
@@ -723,7 +729,7 @@ Content-Type: application/json
 
 {
   "codigo": "OA1",
-  "descripcion": "Desarrollar comprensi�n de textos narrativos",
+  "descripcion": "Desarrollar comprensiÃƒÂ¯Ã‚Â¿Ã‚Â½n de textos narrativos",
   "id_asignatura": 1
 }
 
@@ -734,7 +740,7 @@ Content-Type: application/json
 
 {
   "codigo": "OA1",
-  "descripcion": "Desarrollar comprensi�n y an�lisis de textos narrativos",
+  "descripcion": "Desarrollar comprensiÃƒÂ¯Ã‚Â¿Ã‚Â½n y anÃƒÂ¯Ã‚Â¿Ã‚Â½lisis de textos narrativos",
   "id_asignatura": 1
 }
 
@@ -768,7 +774,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "nombre": "Acto de inicio de a�o escolar",
+  "nombre": "Acto de inicio de aÃƒÂ¯Ã‚Â¿Ã‚Â½o escolar",
   "descripcion": "Bienvenida oficial a la comunidad educativa",
   "fechaInicio": "2026-03-25",
   "fechaFin": "2026-03-25",
@@ -785,8 +791,8 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "nombre": "Acto de inicio de a�o escolar",
-  "descripcion": "Bienvenida oficial y presentaci�n de equipos",
+  "nombre": "Acto de inicio de aÃƒÂ¯Ã‚Â¿Ã‚Â½o escolar",
+  "descripcion": "Bienvenida oficial y presentaciÃƒÂ¯Ã‚Â¿Ã‚Â½n de equipos",
   "fechaInicio": "2026-03-25",
   "fechaFin": "2026-03-25",
   "horaInicio": "09:00:00",
@@ -818,11 +824,11 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "nombre": "1� Medio A",
-  "descripcion": "Curso cient�fico-humanista",
-  "nivelId": 1,
-  "periodoId": 1,
-  "salaId": 1,
+  "nombre": "1ÃƒÂ¯Ã‚Â¿Ã‚Â½ Medio A",
+  "descripcion": "Curso cientÃƒÂ¯Ã‚Â¿Ã‚Â½fico-humanista",
+  "nivelId": {{idNivel}},
+  "periodoId": {{idPeriodo}},
+  "salaId": {{idSala}},
   "activo": true
 }
 
@@ -832,11 +838,11 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "nombre": "1� Medio A",
-  "descripcion": "Curso cient�fico-humanista actualizado",
-  "nivelId": 1,
-  "periodoId": 1,
-  "salaId": 1,
+  "nombre": "1ÃƒÂ¯Ã‚Â¿Ã‚Â½ Medio A",
+  "descripcion": "Curso cientÃƒÂ¯Ã‚Â¿Ã‚Â½fico-humanista actualizado",
+  "nivelId": {{idNivel}},
+  "periodoId": {{idPeriodo}},
+  "salaId": {{idSala}},
   "activo": true
 }
 
@@ -859,7 +865,7 @@ Content-Type: application/json
 
 {
   "nombre": "Primero Medio",
-  "descripcion": "Nivel de ense�anza media",
+  "descripcion": "Nivel de enseÃƒÂ¯Ã‚Â¿Ã‚Â½anza media",
   "activo": true
 }
 
@@ -951,7 +957,7 @@ DELETE {{ms9}}/api/academica/salas/{{idSala}}
 Authorization: Bearer {{token}}
 
 # ============================================================
-# SECCI�N FINAL � PRUEBAS DE SEGURIDAD
+# SECCIÃƒÂ¯Ã‚Â¿Ã‚Â½N FINAL ÃƒÂ¯Ã‚Â¿Ã‚Â½ PRUEBAS DE SEGURIDAD
 # Un request por MS para validar 401 sin token
 # ============================================================
 
@@ -986,52 +992,52 @@ GET {{ms8}}/api/calendario/eventos
 GET {{ms9}}/api/academica/cursos
 
 # ============================================================
-# SECCI�N FINAL � TOKEN INV�LIDO
-# Un request por MS para validar 401 con token inv�lido
+# SECCIÃƒÂ¯Ã‚Â¿Ã‚Â½N FINAL ÃƒÂ¯Ã‚Â¿Ã‚Â½ TOKEN INVÃƒÂ¯Ã‚Â¿Ã‚Â½LIDO
+# Un request por MS para validar 401 con token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 # ============================================================
 
-### Seguridad MS0 - token inv�lido
+### Seguridad MS0 - token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 GET {{ms0}}/api/usuarios
 Authorization: Bearer {{invalidToken}}
 
-### Seguridad MS1 - token inv�lido
+### Seguridad MS1 - token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 GET {{ms1}}/api/paises
 Authorization: Bearer {{invalidToken}}
 
-### Seguridad MS2 - token inv�lido
+### Seguridad MS2 - token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 GET {{ms2}}/api/reuniones/generales
 Authorization: Bearer {{invalidToken}}
 
-### Seguridad MS3 - token inv�lido
+### Seguridad MS3 - token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 GET {{ms3}}/api/matricula
 Authorization: Bearer {{invalidToken}}
 
-### Seguridad MS4 - token inv�lido
+### Seguridad MS4 - token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 GET {{ms4}}/api/convivencia/anotaciones
 Authorization: Bearer {{invalidToken}}
 
-### Seguridad MS5 - token inv�lido
+### Seguridad MS5 - token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 GET {{ms5}}/api/mensajeria/recibidos
 Authorization: Bearer {{invalidToken}}
 
-### Seguridad MS6 - token inv�lido
+### Seguridad MS6 - token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 GET {{ms6}}/api/notas
 Authorization: Bearer {{invalidToken}}
 
-### Seguridad MS7 - token inv�lido
+### Seguridad MS7 - token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 GET {{ms7}}/api/asignatura
 Authorization: Bearer {{invalidToken}}
 
-### Seguridad MS8 - token inv�lido
+### Seguridad MS8 - token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 GET {{ms8}}/api/calendario/eventos
 Authorization: Bearer {{invalidToken}}
 
-### Seguridad MS9 - token inv�lido
+### Seguridad MS9 - token invÃƒÂ¯Ã‚Â¿Ã‚Â½lido
 GET {{ms9}}/api/academica/cursos
 Authorization: Bearer {{invalidToken}}
 
 # ============================================================
-# SECCI�N � PRUEBA DE CORTE
+# SECCIÃƒÂ¯Ã‚Â¿Ã‚Â½N ÃƒÂ¯Ã‚Â¿Ã‚Â½ PRUEBA DE CORTE
 # 1. Ejecuta: docker-compose stop identidad
 # 2. Ejecuta cualquier request protegido, por ejemplo el siguiente
 # 3. Debe retornar 503

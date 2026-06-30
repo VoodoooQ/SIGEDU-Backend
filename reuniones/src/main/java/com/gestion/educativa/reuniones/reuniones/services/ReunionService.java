@@ -65,20 +65,12 @@ public class ReunionService {
     }
 
     public BitacoraReunionApoderado guardarApoderado(BitacoraReunionApoderado reunionApoderado) {
-        boolean matriculado = matriculaClientService.estudianteMatriculado(reunionApoderado.getRunApoderado());
-        if (!matriculado) {
-            log.warn("No se encontro matricula activa o lista vacia para run de apoderado {}", reunionApoderado.getRunApoderado());
-        }
         return reunionApoderadoRepository.save(reunionApoderado);
     }
 
     public BitacoraReunionApoderado actualizarApoderado(Long idBitacoraReunionApoderado, BitacoraReunionApoderado reunionApoderado) {
         BitacoraReunionApoderado existente = reunionApoderadoRepository.findById(idBitacoraReunionApoderado)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reunion de apoderado no encontrada"));
-        boolean matriculado = matriculaClientService.estudianteMatriculado(reunionApoderado.getRunApoderado());
-        if (!matriculado) {
-            log.warn("No se encontro matricula activa o lista vacia para run de apoderado {}", reunionApoderado.getRunApoderado());
-        }
         existente.setFechaReunion(reunionApoderado.getFechaReunion());
         existente.setHoraReunion(reunionApoderado.getHoraReunion());
         existente.setRunApoderado(reunionApoderado.getRunApoderado());
@@ -101,20 +93,14 @@ public class ReunionService {
     }
 
     public BitacoraReunionP1aP1 guardarP1aP1(BitacoraReunionP1aP1 reunionP1aP1) {
-        boolean matriculado = matriculaClientService.estudianteMatriculado(reunionP1aP1.getRunEstudiante());
-        if (!matriculado) {
-            log.warn("No se encontro matricula activa o lista vacia para estudiante {}", reunionP1aP1.getRunEstudiante());
-        }
+        validarMatriculaActiva(reunionP1aP1.getRunEstudiante());
         return reunionP1aP1Repository.save(reunionP1aP1);
     }
 
     public BitacoraReunionP1aP1 actualizarP1aP1(Long idBitacoraReunionP1aP1, BitacoraReunionP1aP1 reunionP1aP1) {
         BitacoraReunionP1aP1 existente = reunionP1aP1Repository.findById(idBitacoraReunionP1aP1)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reunion p1a1 no encontrada"));
-        boolean matriculado = matriculaClientService.estudianteMatriculado(reunionP1aP1.getRunEstudiante());
-        if (!matriculado) {
-            log.warn("No se encontro matricula activa o lista vacia para estudiante {}", reunionP1aP1.getRunEstudiante());
-        }
+        validarMatriculaActiva(reunionP1aP1.getRunEstudiante());
         existente.setFechaReunion(reunionP1aP1.getFechaReunion());
         existente.setHoraReunion(reunionP1aP1.getHoraReunion());
         existente.setRunEstudiante(reunionP1aP1.getRunEstudiante());
@@ -130,5 +116,12 @@ public class ReunionService {
 
     public void eliminarP1aP1(Long idBitacoraReunionP1aP1) {
         reunionP1aP1Repository.deleteById(idBitacoraReunionP1aP1);
+    }
+
+    private void validarMatriculaActiva(String runEstudiante) {
+        if (!matriculaClientService.estudianteMatriculado(runEstudiante)) {
+            log.warn("No se encontro matricula activa o lista vacia para estudiante {}", runEstudiante);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estudiante no registra matricula activa");
+        }
     }
 }

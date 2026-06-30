@@ -7,8 +7,11 @@ import com.gestion.educativa.convivencia.convivencia.models.request.AnotacionReq
 import com.gestion.educativa.convivencia.convivencia.repositories.AnotacionesRepository;
 import com.gestion.educativa.convivencia.convivencia.services.AnotacionesService;
 import com.gestion.educativa.convivencia.convivencia.services.MatriculaClientService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -37,10 +40,7 @@ public class AnotacionesServiceImpl implements AnotacionesService {
 
     @Override
     public AnotacionesDto create(AnotacionRequest request, String runAutorRef) {
-        boolean matriculado = matriculaClientService.estudianteMatriculado(request.getRunEstudianteRef());
-        if (!matriculado) {
-            log.warn("Estudiante {} no registra matricula activa o matricula devolvio lista vacia", request.getRunEstudianteRef());
-        }
+        validarMatriculaActiva(request.getRunEstudianteRef());
 
         Anotaciones a = new Anotaciones();
         a.setRunEstudianteRef(request.getRunEstudianteRef());
@@ -55,6 +55,7 @@ public class AnotacionesServiceImpl implements AnotacionesService {
     public AnotacionesDto update(Long id, AnotacionRequest request) {
         Anotaciones existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Anotacion no encontrada con id: " + id));
+        validarMatriculaActiva(request.getRunEstudianteRef());
         existing.setRunEstudianteRef(request.getRunEstudianteRef());
         existing.setFecha(request.getFecha());
         existing.setTipo(request.getTipo());
@@ -72,6 +73,13 @@ public class AnotacionesServiceImpl implements AnotacionesService {
     @Override
     public List<AnotacionesDto> findByRunEstudianteRef(String runEstudianteRef) {
         return repository.findByRunEstudianteRef(runEstudianteRef).stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    private void validarMatriculaActiva(String runEstudianteRef) {
+        if (!matriculaClientService.estudianteMatriculado(runEstudianteRef)) {
+            log.warn("Estudiante {} no registra matricula activa o matricula devolvio lista vacia", runEstudianteRef);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estudiante no registra matricula activa");
+        }
     }
 
     private AnotacionesDto toDto(Anotaciones a) {

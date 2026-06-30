@@ -35,17 +35,7 @@ public class NotaService {
     }
 
     public Nota crear(NotaRequest request, String runDocenteRef) {
-        if (request.getCodigoAsignatura() != null) {
-            if (gestionAcademicaClientService.obtenerAsignatura(request.getCodigoAsignatura()) == null) {
-                log.warn("Asignatura {} no encontrada o gestionacademica no disponible", request.getCodigoAsignatura());
-            }
-        }
-        if (request.getRunEstudiante() != null) {
-            boolean matriculado = matriculaClientService.estudianteMatriculado(request.getRunEstudiante());
-            if (!matriculado) {
-                log.warn("Estudiante {} no registra matricula activa o matricula devolvio lista vacia", request.getRunEstudiante());
-            }
-        }
+        validarDependencias(request);
 
         Nota nota = mapearRequestANota(request);
         nota.setRunDocenteRef(runDocenteRef);
@@ -55,6 +45,9 @@ public class NotaService {
     public Nota actualizar(Long idNota, NotaRequest request) {
         Nota notaExistente = notaRepository.findById(idNota)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nota no encontrada"));
+
+        validarDependencias(request);
+
         notaExistente.setRunEstudiante(request.getRunEstudiante());
         notaExistente.setCodigoAsignatura(request.getCodigoAsignatura());
         notaExistente.setPeriodo(request.getPeriodo());
@@ -75,6 +68,20 @@ public class NotaService {
     public Nota obtenerPorId(Long idNota) {
         return notaRepository.findById(idNota)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nota no encontrada"));
+    }
+
+    private void validarDependencias(NotaRequest request) {
+        if (request.getCodigoAsignatura() != null
+                && gestionAcademicaClientService.obtenerAsignatura(request.getCodigoAsignatura()) == null) {
+            log.warn("Asignatura {} no encontrada o gestionacademica no disponible", request.getCodigoAsignatura());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Asignatura no encontrada en gestionacademica");
+        }
+
+        if (request.getRunEstudiante() != null
+                && !matriculaClientService.estudianteMatriculado(request.getRunEstudiante())) {
+            log.warn("Estudiante {} no registra matricula activa o matricula devolvio lista vacia", request.getRunEstudiante());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estudiante no registra matricula activa");
+        }
     }
 
     private Nota mapearRequestANota(NotaRequest request) {
