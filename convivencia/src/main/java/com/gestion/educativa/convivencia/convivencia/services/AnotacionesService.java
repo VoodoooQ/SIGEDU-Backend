@@ -6,17 +6,10 @@ import com.gestion.educativa.convivencia.convivencia.models.request.AnotacionReq
 import java.util.List;
 
 public interface AnotacionesService {
-
-	List<AnotacionesDto> findAll();
-
-	AnotacionesDto findById(Long id);
-
-	AnotacionesDto create(AnotacionRequest request);
-
-	AnotacionesDto update(Long id, AnotacionRequest request);
-
-	void delete(Long id);
-
-	List<AnotacionesDto> findByEstudianteId(Long estudianteId);
-
+    List<AnotacionesDto> findAll();
+    AnotacionesDto findById(Long id);
+    AnotacionesDto create(AnotacionRequest request, String runAutorRef);
+    AnotacionesDto update(Long id, AnotacionRequest request);
+    void delete(Long id);
+    List<AnotacionesDto> findByRunEstudianteRef(String runEstudianteRef);
 }

@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface AnotacionesRepository extends JpaRepository<Anotaciones, Long> {
-	
-	List<Anotaciones> findByEstudianteId(Long estudianteId);
-
+    List<Anotaciones> findByRunEstudianteRef(String runEstudianteRef);
 }

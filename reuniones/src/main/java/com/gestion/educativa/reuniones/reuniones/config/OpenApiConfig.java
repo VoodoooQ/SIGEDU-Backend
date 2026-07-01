@@ -1,7 +1,10 @@
 package com.gestion.educativa.reuniones.reuniones.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,15 +12,24 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-	@Bean
-	public OpenAPI reunionesOpenApi() {
-		return new OpenAPI()
-				.info(new Info()
-						.title("MS Reuniones SIGEDU")
-						.description("API para reuniones y acuerdos institucionales")
-						.version("1.0.0"))
-				.addServersItem(new Server()
-						.url("http://localhost:8082")
-						.description("Reuniones local"));
-	}
+    @Bean
+    public OpenAPI reunionesOpenApi() {
+        String nombreEsquema = "bearerAuth";
+        return new OpenAPI()
+                .info(new Info()
+                        .title("MS2 - Reuniones SIGEDU")
+                        .description("API para reuniones y acuerdos institucionales")
+                        .version("1.0.0"))
+                .components(new Components().addSecuritySchemes(
+                        nombreEsquema,
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                ))
+                .addSecurityItem(new SecurityRequirement().addList(nombreEsquema))
+                .addServersItem(new Server()
+                        .url("http://localhost:8082")
+                        .description("MS2 local"));
+    }
 }

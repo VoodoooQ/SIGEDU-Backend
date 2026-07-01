@@ -16,6 +16,7 @@ import com.gestion.educativa.geografia.geografia.repositories.DireccionRepositor
 public class DireccionService {
     @Autowired
     private DireccionRepository direccionRepository;
+
     public Direccion agregarDireccion(AgregarDireccion request, String rut_usuario) {
         Direccion nuevaDireccion = new Direccion();
         nuevaDireccion.setNombre_direccion(request.getNombre_direccion());
@@ -23,18 +24,30 @@ public class DireccionService {
         nuevaDireccion.setRun_usuario_ref(rut_usuario);
         return direccionRepository.save(nuevaDireccion);
     }
+
     public Direccion modificarDireccion(int id_direccion, ModificarDireccion request) {
-        Direccion direccionExistente = direccionRepository.findById(id_direccion).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dirección no encontrada"));
+        Direccion direccionExistente = obtenerDireccionPorId(id_direccion);
         direccionExistente.setNombre_direccion(request.getNombre_direccion());
         direccionExistente.setId_comuna(request.getId_comuna());
         return direccionRepository.save(direccionExistente);
     }
+
     public List<Direccion> obtenerDireccionPorRun(String rut_usuario) {
         List<Direccion> direcciones = direccionRepository.findByRunUsuarioRef(rut_usuario);
 
         if (direcciones.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dirección para usuario con run " + rut_usuario + " no encontrada");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Direccion para usuario con run " + rut_usuario + " no encontrada");
         }
         return direcciones;
+    }
+
+    public Direccion obtenerDireccionPorId(int id_direccion) {
+        return direccionRepository.findById(id_direccion)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Direccion no encontrada"));
+    }
+
+    public void eliminarDireccion(int id_direccion) {
+        Direccion direccionExistente = obtenerDireccionPorId(id_direccion);
+        direccionRepository.delete(direccionExistente);
     }
 }

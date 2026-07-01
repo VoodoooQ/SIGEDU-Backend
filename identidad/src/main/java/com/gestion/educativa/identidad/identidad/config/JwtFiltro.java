@@ -34,7 +34,8 @@ public class JwtFiltro extends OncePerRequestFilter {
         String rutaSolicitada = request.getServletPath();
         if (rutaSolicitada.startsWith("/swagger-ui") ||
                 rutaSolicitada.startsWith("/v3/api-docs") ||
-                rutaSolicitada.equals("/api/auth/login")) {
+                rutaSolicitada.equals("/api/auth/login") ||
+                rutaSolicitada.equals("/api/auth/validar")) {
             filterChain.doFilter(request, response);
             return;
         }

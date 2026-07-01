@@ -21,4 +21,5 @@ public class NotaDto {
     private Double ponderacion;
     private Double calificacion;
     private String observaciones;
+    private String runDocenteRef;
 }

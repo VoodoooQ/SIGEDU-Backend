@@ -6,17 +6,10 @@ import com.gestion.educativa.convivencia.convivencia.models.request.HojaVidaRequ
 import java.util.List;
 
 public interface HojaVidaService {
-
-	List<HojaVidaEstudianteDto> findAll();
-
-	HojaVidaEstudianteDto findById(Long id);
-
-	HojaVidaEstudianteDto create(HojaVidaRequest request);
-
-	HojaVidaEstudianteDto update(Long id, HojaVidaRequest request);
-
-	void delete(Long id);
-
-	List<HojaVidaEstudianteDto> findByEstudianteId(Long estudianteId);
-
+    List<HojaVidaEstudianteDto> findAll();
+    HojaVidaEstudianteDto findById(Long id);
+    HojaVidaEstudianteDto create(HojaVidaRequest request, String runAutorRef);
+    HojaVidaEstudianteDto update(Long id, HojaVidaRequest request);
+    void delete(Long id);
+    List<HojaVidaEstudianteDto> findByRunEstudianteRef(String runEstudianteRef);
 }

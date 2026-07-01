@@ -1,17 +1,13 @@
-FROM maven:3.9.11-eclipse-temurin-21 AS builder
+FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /app
-
-COPY .mvn/ .mvn
+COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
-RUN chmod +x mvnw
-
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
 COPY src ./src
-RUN ./mvnw -DskipTests clean package
+RUN ./mvnw clean package -DskipTests
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-
-COPY --from=builder /app/target/*.jar app.jar
-EXPOSE 8080
-
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8082
+ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,9 +1,15 @@
 package com.gestion.educativa.notas.notas.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.util.Arrays;
 import java.util.List;
+import com.gestion.educativa.notas.notas.models.dto.UsuarioValidadoDto;
 import com.gestion.educativa.notas.notas.models.entity.Nota;
 import com.gestion.educativa.notas.notas.models.request.NotaRequest;
 import com.gestion.educativa.notas.notas.services.NotaService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +21,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/notas")
+@Tag(name = "Notas")
 public class NotaController {
 
     private final NotaService notaService;
@@ -26,24 +34,65 @@ public class NotaController {
         this.notaService = notaService;
     }
 
+    @Operation(summary = "Listar notas")
     @GetMapping
-    public ResponseEntity<List<Nota>> listar() {
+    public ResponseEntity<List<Nota>> listar(HttpServletRequest request) {
+        validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR");
         return ResponseEntity.ok(notaService.listar());
     }
 
+    @Operation(summary = "Listar notas por estudiante")
+    @GetMapping("/estudiante/{runEstudiante}")
+    public ResponseEntity<List<Nota>> listarPorEstudiante(@PathVariable String runEstudiante, HttpServletRequest request) {
+        UsuarioValidadoDto usuario = obtenerUsuario(request);
+        validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR", "DOCENTE", "APODERADO", "ESTUDIANTE");
+        if ((tieneRol(usuario, "APODERADO") || tieneRol(usuario, "ESTUDIANTE"))
+                && (usuario.getRunUsuario() == null || !usuario.getRunUsuario().equals(runEstudiante))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permisos para esta accion");
+        }
+        return ResponseEntity.ok(notaService.listarPorEstudiante(runEstudiante));
+    }
+
+    @Operation(summary = "Crear nota")
     @PostMapping
-    public ResponseEntity<Nota> crear(@Valid @RequestBody NotaRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notaService.crear(request));
+    public ResponseEntity<Nota> crear(@Valid @RequestBody NotaRequest requestBody, HttpServletRequest request) {
+        validarPermiso(request, "ADMIN", "DIRECTIVO", "DOCENTE");
+        String runDocenteRef = obtenerUsuario(request).getRunUsuario();
+        return ResponseEntity.status(HttpStatus.CREATED).body(notaService.crear(requestBody, runDocenteRef));
     }
 
+    @Operation(summary = "Actualizar nota")
     @PutMapping("/{id}")
-    public ResponseEntity<Nota> actualizar(@PathVariable Long id, @Valid @RequestBody NotaRequest request) {
-        return ResponseEntity.ok(notaService.actualizar(id, request));
+    public ResponseEntity<Nota> actualizar(@PathVariable Long id, @Valid @RequestBody NotaRequest requestBody, HttpServletRequest request) {
+        UsuarioValidadoDto usuario = obtenerUsuario(request);
+        Nota nota = notaService.obtenerPorId(id);
+        boolean puedeActualizar = tieneRol(usuario, "ADMIN", "DIRECTIVO")
+                || (tieneRol(usuario, "DOCENTE") && usuario.getRunUsuario() != null && usuario.getRunUsuario().equals(nota.getRunDocenteRef()));
+        if (!puedeActualizar) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permisos para esta accion");
+        }
+        return ResponseEntity.ok(notaService.actualizar(id, requestBody));
     }
 
+    @Operation(summary = "Eliminar nota")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Long id, HttpServletRequest request) {
+        validarPermiso(request, "ADMIN", "DIRECTIVO");
         notaService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private UsuarioValidadoDto obtenerUsuario(HttpServletRequest request) {
+        return (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
+    }
+
+    private void validarPermiso(HttpServletRequest request, String... rolesPermitidos) {
+        if (!tieneRol(obtenerUsuario(request), rolesPermitidos)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permisos para esta accion");
+        }
+    }
+
+    private boolean tieneRol(UsuarioValidadoDto usuario, String... rolesPermitidos) {
+        return usuario != null && usuario.getRoles() != null && usuario.getRoles().stream().anyMatch(Arrays.asList(rolesPermitidos)::contains);
     }
 }
