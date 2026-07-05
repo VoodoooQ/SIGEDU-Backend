@@ -1,5 +1,6 @@
 package com.gestion.educativa.notas.notas.models.request;
 
+import java.time.LocalDate;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,9 @@ public class NotaRequest {
 
     @NotBlank
     private String periodo;
+
+    // Opcional; si no viene, el servicio usa la fecha actual.
+    private LocalDate fechaEvaluacion;
 
     @NotBlank
     private String tipoEvaluacion;

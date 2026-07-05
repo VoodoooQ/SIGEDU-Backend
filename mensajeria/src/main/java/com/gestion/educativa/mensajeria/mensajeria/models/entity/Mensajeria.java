@@ -39,4 +39,7 @@ public class Mensajeria {
 
     @Column(name = "run_receptor_ref", length = 255)
     private String runReceptorRef;
+
+    @Column(name = "leido", nullable = false)
+    private boolean leido = false;
 }

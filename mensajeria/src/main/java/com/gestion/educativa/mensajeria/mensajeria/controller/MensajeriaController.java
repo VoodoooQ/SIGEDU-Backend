@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -67,6 +68,17 @@ public class MensajeriaController {
         solicitud.setRunEmisor(usuario.getRunUsuario());
         MensajeriaDto respuesta = mensajeriaService.responder(idMensaje, solicitud);
         return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+    }
+
+    @PutMapping("/leido/{idMensaje}")
+    @Operation(summary = "Marcar un mensaje recibido como leido")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "404", description = "Mensaje no encontrado")
+    public ResponseEntity<MensajeriaDto> marcarLeido(
+            @PathVariable Integer idMensaje,
+            HttpServletRequest request) {
+        UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
+        return ResponseEntity.ok(mensajeriaService.marcarLeido(idMensaje, usuario.getRunUsuario()));
     }
 
     @GetMapping("/recibidos")

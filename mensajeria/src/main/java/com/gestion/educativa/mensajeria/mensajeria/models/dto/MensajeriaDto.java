@@ -16,4 +16,5 @@ public class MensajeriaDto {
     private LocalDateTime fechaEnvio;
     private String runEmisorRef;
     private String runReceptorRef;
+    private boolean leido;
 }
