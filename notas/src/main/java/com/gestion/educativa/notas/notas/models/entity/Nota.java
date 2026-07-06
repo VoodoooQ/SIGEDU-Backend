@@ -1,5 +1,6 @@
 package com.gestion.educativa.notas.notas.models.entity;
 
+import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -34,6 +35,11 @@ public class Nota {
 
     @Column(name = "periodo", nullable = false, length = 50)
     private String periodo;
+
+    // Fecha en que se rindio la evaluacion; nullable para las notas
+    // registradas antes de que existiera el campo.
+    @Column(name = "fecha_evaluacion")
+    private LocalDate fechaEvaluacion;
 
     @Column(name = "tipo_evaluacion", nullable = false, length = 80)
     private String tipoEvaluacion;

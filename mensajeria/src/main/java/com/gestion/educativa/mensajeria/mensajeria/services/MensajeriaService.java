@@ -69,6 +69,20 @@ public class MensajeriaService {
                 .toList();
     }
 
+    public MensajeriaDto marcarLeido(Integer idMensaje, String runUsuario) {
+        Mensajeria mensaje = mensajeriaRepository.findById(idMensaje)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mensaje no encontrado"));
+
+        // Solo el receptor puede marcarlo; los masivos (receptor null)
+        // se marcan de forma global, simplificacion aceptada del modelo.
+        if (mensaje.getRunReceptorRef() != null && !mensaje.getRunReceptorRef().equals(runUsuario)) {
+            throw new IllegalArgumentException("Solo puedes marcar como leidos tus mensajes recibidos");
+        }
+
+        mensaje.setLeido(true);
+        return mapearDto(mensajeriaRepository.save(mensaje));
+    }
+
     public List<MensajeriaDto> obtenerEnviados(String runUsuario) {
         if (runUsuario == null || runUsuario.isBlank()) {
             throw new IllegalArgumentException("El runUsuario es obligatorio");
@@ -87,7 +101,8 @@ public class MensajeriaService {
                 mensaje.getContenido(),
                 mensaje.getFechaEnvio(),
                 mensaje.getRunEmisorRef(),
-                mensaje.getRunReceptorRef()
+                mensaje.getRunReceptorRef(),
+                mensaje.isLeido()
         );
     }
 }

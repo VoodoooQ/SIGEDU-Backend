@@ -12,6 +12,7 @@ import com.gestion.educativa.identidad.identidad.repositories.UsuarioRolReposito
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 @Configuration
@@ -22,7 +23,8 @@ public class RoleSeedConfig {
     public CommandLineRunner sembrarRolesBase(
             RolRepository rolRepository,
             UsuarioRepository usuarioRepository,
-            UsuarioRolRepository usuarioRolRepository
+            UsuarioRolRepository usuarioRolRepository,
+            PasswordEncoder passwordEncoder
     ) {
         return args -> {
             List<String> rolesBase = List.of(
@@ -44,6 +46,29 @@ public class RoleSeedConfig {
                             return rolRepository.save(nuevoRol);
                         });
                 rolesPorNombre.put(nombreRol, rol);
+            }
+
+            // Usuario administrador semilla: solo cuando la base nace vacia,
+            // para que el sistema sea usable recien clonado (no hay endpoint
+            // publico para crear el primer usuario).
+            if (usuarioRepository.count() == 0) {
+                Usuario admin = new Usuario();
+                admin.setRunUsuario("12345678");
+                admin.setDvrunUsuario('5');
+                admin.setPNombreUsuario("Admin");
+                admin.setPApellidoUsuario("SIGEDU");
+                admin.setCorreoUsuario("admin@sigedu.cl");
+                admin.setGenero('M');
+                admin.setContrasena(passwordEncoder.encode("admin123"));
+                admin = usuarioRepository.save(admin);
+
+                Rol rolAdmin = rolesPorNombre.get("ADMIN");
+                if (rolAdmin != null) {
+                    UsuarioRol asignacionAdminSemilla = new UsuarioRol();
+                    asignacionAdminSemilla.setUsuario(admin);
+                    asignacionAdminSemilla.setRol(rolAdmin);
+                    usuarioRolRepository.save(asignacionAdminSemilla);
+                }
             }
 
             // Compatibilidad: si un usuario tiene ADMIN, se le agrega DIRECTIVO.
