@@ -22,23 +22,47 @@ public class MensajeriaService {
             throw new IllegalArgumentException("El runReceptor es obligatorio para mensaje directo");
         }
 
-        Mensajeria mensaje = new Mensajeria();
-        mensaje.setAsunto(solicitud.getAsunto());
-        mensaje.setContenido(solicitud.getContenido());
-        mensaje.setFechaEnvio(LocalDateTime.now());
-        mensaje.setRunEmisorRef(solicitud.getRunEmisor());
-        mensaje.setRunReceptorRef(solicitud.getRunReceptor());
+        Mensajeria mensaje = crearMensaje(
+                solicitud.getRunEmisor(),
+                solicitud.getRunReceptor(),
+                solicitud.getAsunto(),
+                solicitud.getContenido()
+        );
         return mapearDto(mensajeriaRepository.save(mensaje));
     }
 
     public MensajeriaDto enviarMasivo(MensajeMasivoRequest solicitud) {
-        Mensajeria mensaje = new Mensajeria();
-        mensaje.setAsunto(solicitud.getAsunto());
-        mensaje.setContenido(solicitud.getContenido());
-        mensaje.setFechaEnvio(LocalDateTime.now());
-        mensaje.setRunEmisorRef(solicitud.getRunEmisor());
-        mensaje.setRunReceptorRef(null);
-        return mapearDto(mensajeriaRepository.save(mensaje));
+        List<String> receptores = solicitud.getRunReceptores() == null
+                ? List.of()
+                : solicitud.getRunReceptores().stream()
+                        .map(this::soloRun)
+                        .filter(run -> !run.isBlank())
+                        .filter(run -> !run.equals(soloRun(solicitud.getRunEmisor())))
+                        .distinct()
+                        .toList();
+
+        if (receptores.isEmpty()) {
+            Mensajeria mensaje = crearMensaje(
+                    solicitud.getRunEmisor(),
+                    null,
+                    solicitud.getAsunto(),
+                    solicitud.getContenido()
+            );
+            return mapearDto(mensajeriaRepository.save(mensaje));
+        }
+
+        List<MensajeriaDto> enviados = receptores.stream()
+                .map(runReceptor -> crearMensaje(
+                        solicitud.getRunEmisor(),
+                        runReceptor,
+                        solicitud.getAsunto(),
+                        solicitud.getContenido()
+                ))
+                .map(mensajeriaRepository::save)
+                .map(this::mapearDto)
+                .toList();
+
+        return enviados.get(0);
     }
 
     public MensajeriaDto responder(Integer idMensaje, MensajeriaRequest solicitud) {
@@ -49,12 +73,12 @@ public class MensajeriaService {
             throw new IllegalArgumentException("Solo puedes responder un mensaje recibido por tu usuario");
         }
 
-        Mensajeria respuesta = new Mensajeria();
-        respuesta.setAsunto(solicitud.getAsunto());
-        respuesta.setContenido(solicitud.getContenido());
-        respuesta.setFechaEnvio(LocalDateTime.now());
-        respuesta.setRunEmisorRef(solicitud.getRunEmisor());
-        respuesta.setRunReceptorRef(original.getRunEmisorRef());
+        Mensajeria respuesta = crearMensaje(
+                solicitud.getRunEmisor(),
+                original.getRunEmisorRef(),
+                solicitud.getAsunto(),
+                solicitud.getContenido()
+        );
         return mapearDto(mensajeriaRepository.save(respuesta));
     }
 
@@ -69,20 +93,6 @@ public class MensajeriaService {
                 .toList();
     }
 
-    public MensajeriaDto marcarLeido(Integer idMensaje, String runUsuario) {
-        Mensajeria mensaje = mensajeriaRepository.findById(idMensaje)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Mensaje no encontrado"));
-
-        // Solo el receptor puede marcarlo; los masivos (receptor null)
-        // se marcan de forma global, simplificacion aceptada del modelo.
-        if (mensaje.getRunReceptorRef() != null && !mensaje.getRunReceptorRef().equals(runUsuario)) {
-            throw new IllegalArgumentException("Solo puedes marcar como leidos tus mensajes recibidos");
-        }
-
-        mensaje.setLeido(true);
-        return mapearDto(mensajeriaRepository.save(mensaje));
-    }
-
     public List<MensajeriaDto> obtenerEnviados(String runUsuario) {
         if (runUsuario == null || runUsuario.isBlank()) {
             throw new IllegalArgumentException("El runUsuario es obligatorio");
@@ -94,6 +104,48 @@ public class MensajeriaService {
                 .toList();
     }
 
+    public MensajeriaDto marcarLeido(Integer idMensaje, String runUsuario) {
+        Mensajeria mensaje = mensajeriaRepository.findById(idMensaje)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mensaje no encontrado"));
+
+        boolean esReceptor = mensaje.getRunReceptorRef() != null && mensaje.getRunReceptorRef().equals(runUsuario);
+        boolean esMasivoLegacy = mensaje.getRunReceptorRef() == null;
+        if (!esReceptor && !esMasivoLegacy) {
+            throw new IllegalArgumentException("Solo puedes marcar como leido un mensaje recibido por tu usuario");
+        }
+
+        mensaje.setLeido(true);
+        return mapearDto(mensajeriaRepository.save(mensaje));
+    }
+
+    public void eliminar(Integer idMensaje, String runUsuario) {
+        Mensajeria mensaje = mensajeriaRepository.findById(idMensaje)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mensaje no encontrado"));
+
+        boolean esEmisor = mensaje.getRunEmisorRef().equals(runUsuario);
+        boolean esReceptor = mensaje.getRunReceptorRef() != null && mensaje.getRunReceptorRef().equals(runUsuario);
+        if (!esEmisor && !esReceptor) {
+            throw new IllegalArgumentException("Solo puedes eliminar mensajes enviados o recibidos por tu usuario");
+        }
+
+        mensajeriaRepository.delete(mensaje);
+    }
+
+    private Mensajeria crearMensaje(String runEmisor, String runReceptor, String asunto, String contenido) {
+        Mensajeria mensaje = new Mensajeria();
+        mensaje.setAsunto(asunto);
+        mensaje.setContenido(contenido);
+        mensaje.setFechaEnvio(LocalDateTime.now());
+        mensaje.setRunEmisorRef(soloRun(runEmisor));
+        mensaje.setRunReceptorRef(runReceptor == null ? null : soloRun(runReceptor));
+        mensaje.setLeido(false);
+        return mensaje;
+    }
+
+    private String soloRun(String valor) {
+        return String.valueOf(valor == null ? "" : valor).replaceAll("\\D", "");
+    }
+
     private MensajeriaDto mapearDto(Mensajeria mensaje) {
         return new MensajeriaDto(
                 mensaje.getIdMensaje(),
@@ -102,7 +154,7 @@ public class MensajeriaService {
                 mensaje.getFechaEnvio(),
                 mensaje.getRunEmisorRef(),
                 mensaje.getRunReceptorRef(),
-                mensaje.isLeido()
+                Boolean.TRUE.equals(mensaje.getLeido())
         );
     }
 }

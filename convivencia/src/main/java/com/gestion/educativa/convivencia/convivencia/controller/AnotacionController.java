@@ -7,8 +7,10 @@ import com.gestion.educativa.convivencia.convivencia.models.dto.AnotacionesDto;
 import com.gestion.educativa.convivencia.convivencia.models.dto.UsuarioValidadoDto;
 import com.gestion.educativa.convivencia.convivencia.models.request.AnotacionRequest;
 import com.gestion.educativa.convivencia.convivencia.services.AnotacionesService;
+import com.gestion.educativa.convivencia.convivencia.services.IdentidadClientService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,9 +26,11 @@ import java.util.List;
 public class AnotacionController {
 
     private final AnotacionesService service;
+    private final IdentidadClientService identidadClientService;
 
-    public AnotacionController(AnotacionesService service) {
+    public AnotacionController(AnotacionesService service, IdentidadClientService identidadClientService) {
         this.service = service;
+        this.identidadClientService = identidadClientService;
     }
 
     @Operation(summary = "Listar anotaciones")
@@ -47,10 +51,8 @@ public class AnotacionController {
     @GetMapping("/estudiante/{runEstudiante}")
     public ResponseEntity<List<AnotacionesDto>> getByEstudiante(@PathVariable String runEstudiante, HttpServletRequest request) {
         UsuarioValidadoDto usuario = obtenerUsuario(request);
-        validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR", "DOCENTE", "APODERADO");
-        if (tieneRol(usuario, "APODERADO") && (usuario.getRunUsuario() == null || !usuario.getRunUsuario().equals(runEstudiante))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permisos para esta accion");
-        }
+        validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR", "DOCENTE", "APODERADO", "ESTUDIANTE");
+        validarAccesoEstudiante(request, usuario, runEstudiante);
         return ResponseEntity.ok(service.findByRunEstudianteRef(runEstudiante));
     }
 
@@ -76,6 +78,21 @@ public class AnotacionController {
         validarPermiso(request, "ADMIN", "DIRECTIVO");
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+
+    private void validarAccesoEstudiante(HttpServletRequest request, UsuarioValidadoDto usuario, String runEstudiante) {
+        if (tieneRol(usuario, "ESTUDIANTE") && !normalizarRun(usuario.getRunUsuario()).equals(normalizarRun(runEstudiante))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permisos para esta accion");
+        }
+        if (tieneRol(usuario, "APODERADO")
+                && !identidadClientService.estudianteVinculadoAlApoderado(request.getHeader(HttpHeaders.AUTHORIZATION), runEstudiante)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permisos para esta accion");
+        }
+    }
+
+    private String normalizarRun(String run) {
+        return run == null ? "" : run.replaceAll("[^0-9]", "").trim();
     }
 
     private UsuarioValidadoDto obtenerUsuario(HttpServletRequest request) {

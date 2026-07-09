@@ -1,5 +1,6 @@
 package com.gestion.educativa.mensajeria.mensajeria.models.request;
 
+import java.util.List;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,4 +18,6 @@ public class MensajeMasivoRequest {
 
     @NotBlank(message = "El contenido es obligatorio")
     private String contenido;
+
+    private List<String> runReceptores;
 }

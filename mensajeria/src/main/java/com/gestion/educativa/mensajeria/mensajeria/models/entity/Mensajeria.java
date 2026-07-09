@@ -41,5 +41,5 @@ public class Mensajeria {
     private String runReceptorRef;
 
     @Column(name = "leido", nullable = false)
-    private boolean leido = false;
+    private Boolean leido = false;
 }

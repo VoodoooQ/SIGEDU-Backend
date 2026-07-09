@@ -1,5 +1,7 @@
 package com.gestion.educativa.convivencia.convivencia.services;
 
+import java.util.Arrays;
+
 import com.gestion.educativa.convivencia.convivencia.models.dto.UsuarioValidadoDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -45,5 +47,40 @@ public class IdentidadClientService {
         } catch (ResourceAccessException ex) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No fue posible conectar con identidad");
         }
+    }
+
+    public boolean estudianteVinculadoAlApoderado(String authorizationHeader, String runEstudiante) {
+        if (authorizationHeader == null || authorizationHeader.isBlank() || runEstudiante == null || runEstudiante.isBlank()) {
+            return false;
+        }
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.AUTHORIZATION, authorizationHeader);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            ResponseEntity<UsuarioValidadoDto[]> response = restTemplate.exchange(
+                    identidadUrl + "/api/usuarios/mis-estudiantes",
+                    HttpMethod.GET,
+                    entity,
+                    UsuarioValidadoDto[].class
+            );
+            UsuarioValidadoDto[] estudiantes = response.getBody();
+            if (estudiantes == null) {
+                return false;
+            }
+            String runNormalizado = normalizarRun(runEstudiante);
+            return Arrays.stream(estudiantes)
+                    .anyMatch(estudiante -> runNormalizado.equals(normalizarRun(estudiante.getRunUsuario())));
+        } catch (HttpStatusCodeException ex) {
+            if (ex.getStatusCode().value() == 401 || ex.getStatusCode().value() == 403) {
+                return false;
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Error al consultar estudiantes del apoderado en identidad");
+        } catch (ResourceAccessException ex) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No fue posible conectar con identidad");
+        }
+    }
+
+    private String normalizarRun(String run) {
+        return run == null ? "" : run.replaceAll("[^0-9]", "").trim();
     }
 }

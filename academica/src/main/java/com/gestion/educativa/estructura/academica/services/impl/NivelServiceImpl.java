@@ -39,6 +39,7 @@ public class NivelServiceImpl implements NivelService {
         n.setNombre(request.getNombre());
         n.setDescripcion(request.getDescripcion());
         if (request.getActivo() != null) n.setActivo(request.getActivo());
+        n.setOrden(request.getOrden());
         Nivel saved = repository.save(n);
         return toDto(saved);
     }
@@ -50,6 +51,7 @@ public class NivelServiceImpl implements NivelService {
         existing.setNombre(request.getNombre());
         existing.setDescripcion(request.getDescripcion());
         if (request.getActivo() != null) existing.setActivo(request.getActivo());
+        existing.setOrden(request.getOrden());
         Nivel saved = repository.save(existing);
         return toDto(saved);
     }
@@ -67,6 +69,8 @@ public class NivelServiceImpl implements NivelService {
         d.setNombre(n.getNombre());
         d.setDescripcion(n.getDescripcion());
         d.setActivo(n.isActivo());
+        d.setOrden(n.getOrden());
         return d;
     }
 }
+

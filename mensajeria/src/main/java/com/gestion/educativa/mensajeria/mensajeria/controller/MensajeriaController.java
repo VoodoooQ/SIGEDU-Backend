@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,7 +72,7 @@ public class MensajeriaController {
     }
 
     @PutMapping("/leido/{idMensaje}")
-    @Operation(summary = "Marcar un mensaje recibido como leido")
+    @Operation(summary = "Marcar mensaje como leido")
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "404", description = "Mensaje no encontrado")
     public ResponseEntity<MensajeriaDto> marcarLeido(
@@ -95,5 +96,16 @@ public class MensajeriaController {
     public ResponseEntity<List<MensajeriaDto>> enviados(HttpServletRequest request) {
         UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
         return ResponseEntity.ok(mensajeriaService.obtenerEnviados(usuario.getRunUsuario()));
+    }
+
+    @DeleteMapping("/{idMensaje}")
+    @Operation(summary = "Eliminar mensaje")
+    @ApiResponse(responseCode = "204")
+    public ResponseEntity<Void> eliminar(
+            @PathVariable Integer idMensaje,
+            HttpServletRequest request) {
+        UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
+        mensajeriaService.eliminar(idMensaje, usuario.getRunUsuario());
+        return ResponseEntity.noContent().build();
     }
 }

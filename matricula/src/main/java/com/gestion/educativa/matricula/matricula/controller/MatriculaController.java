@@ -28,7 +28,7 @@ public class MatriculaController {
     @GetMapping
     public ResponseEntity<List<Matricula>> listarTodas(HttpServletRequest request) {
         // DOCENTE solo lectura: necesita conocer el curso de sus estudiantes.
-        validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR", "DOCENTE");
+validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR", "DOCENTE");
         return ResponseEntity.ok(matriculaService.listarTodas());
     }
 

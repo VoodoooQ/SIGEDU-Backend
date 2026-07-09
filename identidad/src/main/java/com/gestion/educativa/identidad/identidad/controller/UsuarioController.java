@@ -43,6 +43,21 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.listarUsuarios());
     }
 
+    @GetMapping("/mis-estudiantes")
+    @Operation(summary = "Listar mis estudiantes", description = "Obtiene los estudiantes asociados al apoderado autenticado")
+    @ApiResponse(responseCode = "403", description = "Sin permisos suficientes")
+    public ResponseEntity<List<UsuarioDto>> listarMisEstudiantes() {
+        return ResponseEntity.ok(usuarioService.listarMisEstudiantes());
+    }
+
+    
+    @GetMapping("/me")
+    @Operation(summary = "Mi perfil", description = "Obtiene el perfil del usuario autenticado")
+    @ApiResponse(responseCode = "403", description = "Sin permisos suficientes")
+    public ResponseEntity<UsuarioDto> obtenerMiPerfil() {
+        return ResponseEntity.ok(usuarioService.obtenerPerfilPropio());
+    }
+
     @GetMapping("/{run}/{dv}")
     @Operation(summary = "Obtener usuario", description = "Obtiene un usuario por RUN y DV segun permisos")
     @ApiResponse(responseCode = "403", description = "Sin permisos suficientes")
@@ -69,3 +84,4 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 }
+
