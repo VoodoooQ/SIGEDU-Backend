@@ -103,6 +103,31 @@ public class UsuarioService {
         throw new AccessDeniedException("No tienes permisos para listar usuarios");
     }
 
+    @Transactional(readOnly = true)
+    public List<UsuarioDto> listarMisEstudiantes() {
+        Authentication autenticacion = obtenerAutenticacion();
+        String runSolicitante = autenticacion.getName();
+        Set<String> autoridades = obtenerAutoridades(autenticacion);
+
+        if (!autoridades.contains("APODERADO")) {
+            throw new AccessDeniedException("Solo apoderados pueden consultar sus estudiantes vinculados");
+        }
+
+        return estudianteRepository.findByApoderado_RunUsuario(runSolicitante)
+                .stream()
+                .map(estudiante -> mapearUsuarioSegunContexto(estudiante, autoridades, runSolicitante))
+                .collect(Collectors.toList());
+    }
+
+    
+    @Transactional(readOnly = true)
+    public UsuarioDto obtenerPerfilPropio() {
+        String runSolicitante = obtenerAutenticacion().getName();
+        Usuario usuario = usuarioRepository.findById(runSolicitante)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+        return mapearUsuarioADto(usuario);
+    }
+
     @Transactional
     public UsuarioDto actualizarUsuario(String runUsuario, Character dvSolicitado, ActualizarUsuarioRequest solicitud) {
         String runNormalizado = limpiarRun(runUsuario);
@@ -523,3 +548,4 @@ public class UsuarioService {
         }
     }
 }
+
