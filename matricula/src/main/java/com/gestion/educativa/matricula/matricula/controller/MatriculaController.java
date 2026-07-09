@@ -27,7 +27,8 @@ public class MatriculaController {
     @Operation(summary = "Listar matr?culas")
     @GetMapping
     public ResponseEntity<List<Matricula>> listarTodas(HttpServletRequest request) {
-        validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR", "DOCENTE");
+        // DOCENTE solo lectura: necesita conocer el curso de sus estudiantes.
+validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR", "DOCENTE");
         return ResponseEntity.ok(matriculaService.listarTodas());
     }
 
@@ -42,7 +43,7 @@ public class MatriculaController {
     @GetMapping("{rut_estudiante}")
     public ResponseEntity<List<Matricula>> obtenerMatricula(@PathVariable String rut_estudiante, HttpServletRequest request) {
         UsuarioValidadoDto usuario = obtenerUsuario(request);
-        validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR", "APODERADO");
+        validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR", "DOCENTE", "APODERADO");
         if (tieneRol(usuario, "APODERADO") && (usuario.getRunUsuario() == null || !usuario.getRunUsuario().equals(rut_estudiante))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permisos para esta accion");
         }

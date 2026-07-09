@@ -36,11 +36,13 @@ public class Nota {
     @Column(name = "periodo", nullable = false, length = 50)
     private String periodo;
 
-    @Column(name = "tipo_evaluacion", nullable = false, length = 80)
-    private String tipoEvaluacion;
-
+    // Fecha en que se rindio la evaluacion; nullable para las notas
+    // registradas antes de que existiera el campo.
     @Column(name = "fecha_evaluacion")
     private LocalDate fechaEvaluacion;
+
+    @Column(name = "tipo_evaluacion", nullable = false, length = 80)
+    private String tipoEvaluacion;
 
     @Column(name = "ponderacion", nullable = false)
     private Double ponderacion;

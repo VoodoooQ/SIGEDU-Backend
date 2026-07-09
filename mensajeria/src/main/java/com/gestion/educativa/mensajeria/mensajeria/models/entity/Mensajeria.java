@@ -43,4 +43,3 @@ public class Mensajeria {
     @Column(name = "leido", nullable = false)
     private Boolean leido = false;
 }
-

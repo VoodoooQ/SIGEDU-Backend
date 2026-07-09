@@ -71,6 +71,17 @@ public class MensajeriaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
     }
 
+    @PutMapping("/leido/{idMensaje}")
+    @Operation(summary = "Marcar mensaje como leido")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "404", description = "Mensaje no encontrado")
+    public ResponseEntity<MensajeriaDto> marcarLeido(
+            @PathVariable Integer idMensaje,
+            HttpServletRequest request) {
+        UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
+        return ResponseEntity.ok(mensajeriaService.marcarLeido(idMensaje, usuario.getRunUsuario()));
+    }
+
     @GetMapping("/recibidos")
     @Operation(summary = "Listar mensajes recibidos")
     @ApiResponse(responseCode = "200")
@@ -85,16 +96,6 @@ public class MensajeriaController {
     public ResponseEntity<List<MensajeriaDto>> enviados(HttpServletRequest request) {
         UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
         return ResponseEntity.ok(mensajeriaService.obtenerEnviados(usuario.getRunUsuario()));
-    }
-
-    @PutMapping("/leido/{idMensaje}")
-    @Operation(summary = "Marcar mensaje como leido")
-    @ApiResponse(responseCode = "200")
-    public ResponseEntity<MensajeriaDto> marcarLeido(
-            @PathVariable Integer idMensaje,
-            HttpServletRequest request) {
-        UsuarioValidadoDto usuario = (UsuarioValidadoDto) request.getAttribute("usuarioAutenticado");
-        return ResponseEntity.ok(mensajeriaService.marcarLeido(idMensaje, usuario.getRunUsuario()));
     }
 
     @DeleteMapping("/{idMensaje}")

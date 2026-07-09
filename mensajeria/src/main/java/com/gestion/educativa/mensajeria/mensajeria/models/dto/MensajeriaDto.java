@@ -18,4 +18,3 @@ public class MensajeriaDto {
     private String runReceptorRef;
     private Boolean leido;
 }
-

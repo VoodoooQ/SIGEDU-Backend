@@ -1,5 +1,6 @@
 package com.gestion.educativa.notas.notas.services;
 
+import java.time.LocalDate;
 import java.util.List;
 import com.gestion.educativa.notas.notas.models.entity.Nota;
 import com.gestion.educativa.notas.notas.models.request.NotaRequest;
@@ -51,8 +52,10 @@ public class NotaService {
         notaExistente.setRunEstudiante(request.getRunEstudiante());
         notaExistente.setCodigoAsignatura(request.getCodigoAsignatura());
         notaExistente.setPeriodo(request.getPeriodo());
+        if (request.getFechaEvaluacion() != null) {
+            notaExistente.setFechaEvaluacion(request.getFechaEvaluacion());
+        }
         notaExistente.setTipoEvaluacion(request.getTipoEvaluacion());
-        notaExistente.setFechaEvaluacion(request.getFechaEvaluacion());
         notaExistente.setPonderacion(request.getPonderacion());
         notaExistente.setCalificacion(request.getCalificacion());
         notaExistente.setObservaciones(request.getObservaciones());
@@ -90,12 +93,11 @@ public class NotaService {
         nota.setRunEstudiante(request.getRunEstudiante());
         nota.setCodigoAsignatura(request.getCodigoAsignatura());
         nota.setPeriodo(request.getPeriodo());
+        nota.setFechaEvaluacion(request.getFechaEvaluacion() != null ? request.getFechaEvaluacion() : LocalDate.now());
         nota.setTipoEvaluacion(request.getTipoEvaluacion());
-        nota.setFechaEvaluacion(request.getFechaEvaluacion());
         nota.setPonderacion(request.getPonderacion());
         nota.setCalificacion(request.getCalificacion());
         nota.setObservaciones(request.getObservaciones());
         return nota;
     }
 }
-
