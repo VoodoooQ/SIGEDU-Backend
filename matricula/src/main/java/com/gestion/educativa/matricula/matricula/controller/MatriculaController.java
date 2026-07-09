@@ -27,7 +27,7 @@ public class MatriculaController {
     @Operation(summary = "Listar matr?culas")
     @GetMapping
     public ResponseEntity<List<Matricula>> listarTodas(HttpServletRequest request) {
-        validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR");
+        validarPermiso(request, "ADMIN", "DIRECTIVO", "INSPECTOR", "DOCENTE");
         return ResponseEntity.ok(matriculaService.listarTodas());
     }
 

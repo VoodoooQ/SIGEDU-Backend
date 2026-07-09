@@ -52,6 +52,7 @@ public class NotaService {
         notaExistente.setCodigoAsignatura(request.getCodigoAsignatura());
         notaExistente.setPeriodo(request.getPeriodo());
         notaExistente.setTipoEvaluacion(request.getTipoEvaluacion());
+        notaExistente.setFechaEvaluacion(request.getFechaEvaluacion());
         notaExistente.setPonderacion(request.getPonderacion());
         notaExistente.setCalificacion(request.getCalificacion());
         notaExistente.setObservaciones(request.getObservaciones());
@@ -90,9 +91,11 @@ public class NotaService {
         nota.setCodigoAsignatura(request.getCodigoAsignatura());
         nota.setPeriodo(request.getPeriodo());
         nota.setTipoEvaluacion(request.getTipoEvaluacion());
+        nota.setFechaEvaluacion(request.getFechaEvaluacion());
         nota.setPonderacion(request.getPonderacion());
         nota.setCalificacion(request.getCalificacion());
         nota.setObservaciones(request.getObservaciones());
         return nota;
     }
 }
+

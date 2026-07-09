@@ -1,5 +1,7 @@
 package com.gestion.educativa.notas.notas.models.request;
 
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -26,6 +28,8 @@ public class NotaRequest {
 
     @NotBlank
     private String tipoEvaluacion;
+
+    private LocalDate fechaEvaluacion;
 
     @NotNull
     private Double ponderacion;

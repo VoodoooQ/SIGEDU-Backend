@@ -4,43 +4,53 @@ import jakarta.validation.constraints.NotBlank;
 
 public class NivelRequest {
 
-	@NotBlank(message = "El nombre del nivel es requerido")
-	private String nombre;
+    @NotBlank(message = "El nombre del nivel es requerido")
+    private String nombre;
 
-	private String descripcion;
+    private String descripcion;
 
-	private Boolean activo;
+    private Boolean activo;
 
-	public NivelRequest() {
-	}
+    private Integer orden;
 
-	public NivelRequest(String nombre, String descripcion, Boolean activo) {
-		this.nombre = nombre;
-		this.descripcion = descripcion;
-		this.activo = activo;
-	}
+    public NivelRequest() {
+    }
 
-	public String getNombre() {
-		return nombre;
-	}
+    public NivelRequest(String nombre, String descripcion, Boolean activo) {
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.activo = activo;
+    }
 
-	public void setNombre(String nombre) {
-		this.nombre = nombre;
-	}
+    public String getNombre() {
+        return nombre;
+    }
 
-	public String getDescripcion() {
-		return descripcion;
-	}
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-	public void setDescripcion(String descripcion) {
-		this.descripcion = descripcion;
-	}
+    public String getDescripcion() {
+        return descripcion;
+    }
 
-	public Boolean getActivo() {
-		return activo;
-	}
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
 
-	public void setActivo(Boolean activo) {
-		this.activo = activo;
-	}
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    public Integer getOrden() {
+        return orden;
+    }
+
+    public void setOrden(Integer orden) {
+        this.orden = orden;
+    }
 }
